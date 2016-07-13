@@ -25,7 +25,7 @@ bool Window::initSDL()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-	window = SDL_CreateWindow("Ambient Occlusion -- written by Jan Simon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow("Ambient Occlusion -- written by Jan Simon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
 
 	if (!window)
 		return false;
@@ -61,8 +61,11 @@ bool Window::initGL()
 	return true;
 }
 
-bool Window::load()
+bool Window::load(unsigned int width, unsigned int height)
 {
+	this->width = width;
+	this->height = height;
+
 	if (!initSDL())
 	{
 		Error::report("Failed to create SDL window.");

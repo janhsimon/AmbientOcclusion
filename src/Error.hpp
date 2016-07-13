@@ -5,5 +5,5 @@
 class Error
 {
 public:
-	static void report(const std::string &text);
+	static void report (const std::string &text);
 };
