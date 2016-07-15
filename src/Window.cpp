@@ -30,6 +30,8 @@ bool Window::initSDL()
 	if (!window)
 		return false;
 
+	SDL_ShowCursor(0);
+
 	return true;
 }
 
@@ -80,6 +82,11 @@ bool Window::load(unsigned int width, unsigned int height)
 
 	done = false;
 	return true;
+}
+
+void Window::warpMouse(unsigned int x, unsigned int y)
+{
+	SDL_WarpMouseInWindow(window, x, y);
 }
 
 void Window::finalizeFrame()

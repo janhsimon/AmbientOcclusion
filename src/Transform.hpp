@@ -4,18 +4,15 @@
 
 class Transform
 {
-private:
-	glm::vec3 forward, right, up;
-	
 protected:
+	glm::vec3 position, velocity, acceleration;
+	glm::vec3 forward, right, up;
 	float pitch, yaw, roll;
 
-public:
-	glm::vec3 position, velocity, acceleration;
-
-	Transform(glm::vec3 position = glm::vec3(0.f));
-
 	void updateTransform(float delta);
+
+public:
+	Transform(glm::vec3 position = glm::vec3(0.f));
 
 	glm::mat4 getWorldMatrix() const;
 

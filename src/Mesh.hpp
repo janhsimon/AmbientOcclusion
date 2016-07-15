@@ -6,18 +6,24 @@
 struct Vertex
 {
 	float positionX, positionY, positionZ;
-	float u, v;
+	float colorR, colorG, colorB, colorA;
 	float normalX, normalY, normalZ;
-	float tangentX, tangentY, tangentZ;
-	float bitangentX, bitangentY, bitangentZ;
 };
 
 class Mesh
 {
-public:
-	unsigned int vertexCount;
-	//unsigned int materialIndex;
+private:
+	GLuint VAO, VBO, IBO;
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
 
-	std::vector<Vertex> load(aiMesh *mesh);
-	void render(unsigned int firstVertex);
+	void populateVertices(const aiMesh *mesh);
+	void populateIndices(const aiMesh *mesh);
+
+public:
+	Mesh();
+	~Mesh();
+
+	bool load(const aiMesh *mesh);
+	void render() const;
 };

@@ -24,7 +24,7 @@ public:
 	void rotatePitch(float amount);
 	void rotateYaw(float amount);
 	void rotateRoll(float amount);
-	
+
 	void update(float delta);
 
 	inline float getFOV() const { return fov; }

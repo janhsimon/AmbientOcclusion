@@ -17,6 +17,7 @@ public:
 	~Window();
 
 	bool load(unsigned int width, unsigned int height);
+	void warpMouse(unsigned int x, unsigned int y);
 	void finalizeFrame();
 
 	//inline SDL_Window *getSDLWindow() { return window; }

@@ -12,9 +12,8 @@ Camera::Camera(const glm::vec3 &position, unsigned int screenWidth, unsigned int
 	nearClipPlane = 1.0f;
 	farClipPlane = 5000.0f;
 
-	setFOV(90.f, screenWidth, screenHeight);
-
 	viewMatrix = glm::mat4(1.0f);
+	setFOV(90.f, screenWidth, screenHeight);
 }
 
 void *Camera::operator new(size_t size)
