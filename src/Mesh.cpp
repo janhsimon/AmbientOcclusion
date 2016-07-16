@@ -21,11 +21,12 @@ void Mesh::populateVertices(const aiMesh *mesh)
 {
 	vertices.clear();
 
+	assert(mesh);
 	for (unsigned int vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex)
 	// loop through each vertex
 	{
 		const aiVector3D	position	= mesh->HasPositions() ? mesh->mVertices[vertexIndex] : aiVector3D(0.0f, 0.0f, 0.0f);
-		const aiColor4D		color		= mesh->HasVertexColors(0) ? mesh->mColors[0][vertexIndex] : aiColor4D(1.0f, 0.0f, 1.0f, 1.0f);
+		const aiColor4D		color		= mesh->HasVertexColors(0) ? mesh->mColors[0][vertexIndex] : (0.7f, 0.7f, 0.7f, 1.0f);
 		const aiVector3D	normal		= mesh->HasNormals() ? mesh->mNormals[vertexIndex] : aiVector3D(0.0f, 1.0f, 0.0f);
 
 		Vertex newVertex = { position.x, position.y, position.z, color.r, color.g, color.b, color.a, normal.x, normal.y, normal.z };
@@ -36,6 +37,10 @@ void Mesh::populateVertices(const aiMesh *mesh)
 void Mesh::populateIndices(const aiMesh *mesh)
 {
 	indices.clear();
+
+	assert(mesh);
+	if (!mesh->HasFaces())
+		return;
 
 	for (unsigned int faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex)
 	// loop through each face

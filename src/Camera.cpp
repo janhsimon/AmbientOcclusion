@@ -2,28 +2,20 @@
 
 #include "Camera.hpp"
 
-const float Camera::MOVEMENT_SPEED = 5.0f;
+const float Camera::MOVEMENT_SPEED = 0.5f; //0.002f;
 const float Camera::PITCH_LOCK = 90.0f;
 
 float Camera::mouseSensitivity = 30.f;
 
-Camera::Camera(const glm::vec3 &position, unsigned int screenWidth, unsigned int screenHeight) : Transform(position)
+Camera::Camera(const glm::vec3 &position, Window *window) : Transform(position)
 {
-	nearClipPlane = 1.0f;
+	this->window = window;
+
+	nearClipPlane = 0.1f;
 	farClipPlane = 5000.0f;
 
 	viewMatrix = glm::mat4(1.0f);
-	setFOV(90.f, screenWidth, screenHeight);
-}
-
-void *Camera::operator new(size_t size)
-{
-	return _aligned_malloc(size, 16);
-}
-
-void Camera::operator delete(void *p)
-{
-	_aligned_free(p);
+	setFOV(90.f);
 }
 
 void Camera::rotatePitch(float amount)
@@ -46,35 +38,49 @@ void Camera::rotateRoll(float amount)
 	roll += amount * mouseSensitivity;
 }
 
-void Camera::update(float delta)
+void Camera::doKeyboardInput(const Input *input, float delta)
 {
-	//acceleration = glm::vec3(0.f, 0.f, 0.f);
+	assert(input);
 
-	/*
-	if (inputManager->forwardKeyPressed && !inputManager->backKeyPressed)
-		position += getForward() * MOVEMENT_SPEED * delta * (inputManager->crouchKeyPressed ? CROUCH_SPEED_FACTOR : 1.f);
-	else if (inputManager->backKeyPressed && !inputManager->forwardKeyPressed)
-		position -= getForward() * MOVEMENT_SPEED * delta * (inputManager->crouchKeyPressed ? CROUCH_SPEED_FACTOR : 1.f);
+	if (input->isForwardKeyDown() && !input->isBackwardKeyDown())
+		position += getForward() * MOVEMENT_SPEED * delta;
+	else if (input->isBackwardKeyDown() && !input->isForwardKeyDown())
+		position -= getForward() * MOVEMENT_SPEED * delta;
 
-	if (inputManager->leftKeyPressed && !inputManager->rightKeyPressed)
-		position += getRight() * MOVEMENT_SPEED * delta * (inputManager->crouchKeyPressed ? CROUCH_SPEED_FACTOR : 1.f);
-	else if (inputManager->rightKeyPressed && !inputManager->leftKeyPressed)
-		position -= getRight() * MOVEMENT_SPEED * delta * (inputManager->crouchKeyPressed ? CROUCH_SPEED_FACTOR : 1.f);
+	if (input->isLeftKeyDown() && !input->isRightKeyDown())
+		position += getRight() * MOVEMENT_SPEED * delta;
+	else if (input->isRightKeyDown() && !input->isLeftKeyDown())
+		position -= getRight() * MOVEMENT_SPEED * delta;
+}
 
-	if (inputManager->upKeyPressed && !inputManager->downKeyPressed)
-		position += getUp() * MOVEMENT_SPEED * delta * (inputManager->crouchKeyPressed ? CROUCH_SPEED_FACTOR : 1.f);
-	else if (inputManager->downKeyPressed && !inputManager->upKeyPressed)
-		position -= getUp() * MOVEMENT_SPEED * delta * (inputManager->crouchKeyPressed ? CROUCH_SPEED_FACTOR : 1.f);
-	*/
+void Camera::doMouseLook(const Input *input)
+{
+	assert(window);
+	const int halfScreenWidth = window->getWidth() / 2;
+	const int halfScreenHeight = window->getHeight() / 2;
+
+	assert(input);
+	rotateYaw((input->getMouseX() - halfScreenWidth) / (float)halfScreenWidth);
+	rotatePitch((input->getMouseY() - halfScreenHeight) / (float)halfScreenHeight);
+
+	window->warpMouse(halfScreenWidth, halfScreenHeight);
+}
+
+void Camera::update(const Input *input, float delta)
+{
+	assert(input);
+	doMouseLook(input);
+	doKeyboardInput(input, delta);
 
 	updateTransform(delta);
 
 	viewMatrix = glm::lookAt(position, position + getForward(), getUp());
 }
 
-void Camera::setFOV(float fov, unsigned int screenWidth, unsigned int screenHeight)
+void Camera::setFOV(float fov)
 {
 	this->fov = fov;
 
-	projectionMatrix = glm::perspectiveFov(glm::radians(fov), (float)screenWidth, (float)screenHeight, nearClipPlane, farClipPlane);
+	assert(window);
+	projectionMatrix = glm::perspectiveFov(glm::radians(fov), (float)window->getWidth(), (float)window->getHeight(), nearClipPlane, farClipPlane);
 }

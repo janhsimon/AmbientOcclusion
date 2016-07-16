@@ -10,10 +10,37 @@ Game::Game()
 	if (!load())
 		return;
 
+	unsigned int thisTickTime, lastTickTime = 0;
+	unsigned int ms = 0;
+	float frameSampleSpacer = 0.0f;
+
+	assert(window);
 	while (!window->getDone())
 	{
-		update(1.0f);
+		thisTickTime = SDL_GetTicks();
+		float delta = (thisTickTime - lastTickTime) * 1.0f;
+
+		frameSampleSpacer -= delta;
+
+		if (frameSampleSpacer <= 0.0f)
+		{
+			ms = (thisTickTime - lastTickTime);
+			frameSampleSpacer = 1000.0f;
+		}
+
+		int fps = 0;
+
+		if (ms > 0.0f)
+			fps = int(1000.0f / ms);
+
+		std::stringstream s;
+		s << fps << "fps " << ms << "ms";
+		window->setTitleInfo(s.str());
+
+		update(delta);
 		render();
+
+		lastTickTime = thisTickTime;
 	}
 }
 
@@ -25,6 +52,9 @@ Game::~Game()
 	if (camera)
 		delete camera;
 
+	if (input)
+		delete input;
+
 	if (window)
 		delete window;
 }
@@ -32,15 +62,16 @@ Game::~Game()
 bool Game::load()
 {
 	window = new Window();
-	assert(window);
-
 	if (!window->load(1280, 720))
 		return false;
 
-	camera = new Camera(glm::vec3(0.0f), window->getWidth(), window->getHeight());
+	input = new Input();
+
+	assert(window);
+	camera = new Camera(glm::vec3(0.0f), window);
 
 	testModel = new Model(glm::vec3(0.0f, 0.0f, 1.5f));
-	if (!testModel->load("Models\\test.obj"))
+	if (!testModel->load("Models\\Sponza.obj"))
 		return false;
 
 	forwardShader = new ForwardShader();
@@ -55,34 +86,28 @@ void Game::update(float delta)
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
-		if (event.type == SDL_MOUSEBUTTONUP)
+		if (event.type == SDL_MOUSEMOTION)
 		{
-			if (event.button.button == 1)
-			{
-				assert(camera);
-				std::stringstream s;
-				s << "Camera yaw: " << camera->getYaw() << " pitch: " << camera->getPitch();
-				Error::report(s.str());
-			}
+			assert(input);
+			input->sendMouseMoveEvent(event);
 		}
-		else if (event.type == SDL_MOUSEMOTION)
+		else if (event.type == SDL_KEYDOWN)
 		{
-			assert(window);
-			const int halfScreenWidth = window->getWidth() / 2;
-			const int halfScreenHeight = window->getHeight() / 2;
-
-			assert(camera);
-			camera->rotateYaw((event.motion.x - halfScreenWidth) / (float)halfScreenWidth);
-			camera->rotatePitch((event.motion.y - halfScreenHeight) / (float)halfScreenHeight);
-
-			window->warpMouse(halfScreenWidth, halfScreenHeight);
+			assert(input);
+			input->sendKeyboardKeyDownEvent(event);
+		}
+		else if (event.type == SDL_KEYUP)
+		{
+			assert(input);
+			input->sendKeyboardKeyUpEvent(event);
 		}
 		else if (event.type == SDL_QUIT)
 			window->setDone(true);
 	}
 
 	assert(camera);
-	camera->update(delta);
+	assert(input);
+	camera->update(input, delta);
 
 	//assert(testModel);
 	//testModel->update(delta);

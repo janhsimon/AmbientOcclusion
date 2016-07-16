@@ -1,5 +1,6 @@
 #include <cassert>
 #include <glew.h>
+#include <sstream>
 
 #include "Error.hpp"
 #include "Window.hpp"
@@ -20,12 +21,12 @@ bool Window::initSDL()
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 		return false;
 
-	// use opengl version 3.1
+	// use opengl version 3.1 core
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-	window = SDL_CreateWindow("Ambient Occlusion -- written by Jan Simon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow("Ambient Occlusion", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
 
 	if (!window)
 		return false;
@@ -55,10 +56,11 @@ bool Window::initGL()
 	if (!GLEW_VERSION_3_1)
 		return false;
 
+	glClearColor(0.3f, 0.3f, 0.6f, 1.0f);
+	glEnable(GL_DEPTH_TEST);
+
 	if (glGetError() != GL_NO_ERROR)
 		return false;
-
-	glClearColor(0.3f, 0.3f, 0.6f, 1.0f);
 
 	return true;
 }
@@ -84,12 +86,23 @@ bool Window::load(unsigned int width, unsigned int height)
 	return true;
 }
 
+void Window::setTitleInfo(const std::string &info)
+{
+	assert(window);
+	std::stringstream s;
+	s << "Ambient Occlusion [" << info << "]";
+	SDL_SetWindowTitle(window, s.str().c_str());
+
+}
+
 void Window::warpMouse(unsigned int x, unsigned int y)
 {
+	assert(window);
 	SDL_WarpMouseInWindow(window, x, y);
 }
 
 void Window::finalizeFrame()
 {
+	assert(window);
 	SDL_GL_SwapWindow(window);
 }

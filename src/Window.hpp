@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL.h>
+#include <string>
 
 class Window
 {
@@ -18,9 +19,8 @@ public:
 
 	bool load(unsigned int width, unsigned int height);
 	void warpMouse(unsigned int x, unsigned int y);
+	void setTitleInfo(const std::string &info);
 	void finalizeFrame();
-
-	//inline SDL_Window *getSDLWindow() { return window; }
 
 	inline unsigned int getWidth() const { return width; }
 	inline unsigned int getHeight() const { return height; }

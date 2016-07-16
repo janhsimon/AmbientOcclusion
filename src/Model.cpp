@@ -12,7 +12,7 @@ Model::Model(glm::vec3 position) : Transform(position)
 
 bool Model::load(const std::string &filename)
 {
-	const aiScene *model = importer.ReadFile(filename, aiProcess_Triangulate);
+	const aiScene *model = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_GenNormals);
 
 	if (!model)
 	// if there was an issue loading the model
