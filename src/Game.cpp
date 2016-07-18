@@ -46,8 +46,11 @@ Game::Game()
 
 Game::~Game()
 {
-	if (testModel)
-		delete testModel;
+	if (model1)
+		delete model1;
+
+	if (model2)
+		delete model2;
 
 	if (camera)
 		delete camera;
@@ -70,9 +73,13 @@ bool Game::load()
 	assert(window);
 	camera = new Camera(glm::vec3(0.0f), window);
 
-	testModel = new Model(glm::vec3(0.0f, 0.0f, 1.5f));
-	if (!testModel->load("Models\\Sponza.obj"))
+	model1 = new Model(glm::vec3(0.0f, 0.0f, 0.0f));
+	if (!model1->load("Models\\ArmyPilot.x"))
 		return false;
+
+	//model2 = new Model(glm::vec3(0.0f, 0.0f, 0.0f));
+	//if (!model2->load("Models\\Sponza.obj"))
+		//return false;
 
 	forwardShader = new ForwardShader();
 	if (!forwardShader->create())
@@ -98,8 +105,16 @@ void Game::update(float delta)
 		}
 		else if (event.type == SDL_KEYUP)
 		{
-			assert(input);
-			input->sendKeyboardKeyUpEvent(event);
+			if (event.key.keysym.sym == SDLK_F1)
+			{
+				assert(model1);
+				model1->changeAnimation();
+			}
+			else
+			{
+				assert(input);
+				input->sendKeyboardKeyUpEvent(event);
+			}
 		}
 		else if (event.type == SDL_QUIT)
 			window->setDone(true);
@@ -109,8 +124,8 @@ void Game::update(float delta)
 	assert(input);
 	camera->update(input, delta);
 
-	//assert(testModel);
-	//testModel->update(delta);
+	assert(model1);
+	model1->update(delta);
 }
 
 void Game::render()
@@ -118,10 +133,9 @@ void Game::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	assert(forwardShader);
-	glUseProgram(forwardShader->getProgram());
-	assert(testModel);
-	forwardShader->setWorldViewProjectionUniforms(testModel->getWorldMatrix(), camera->viewMatrix, camera->projectionMatrix);
-	testModel->render();
-
+	assert(camera);
+	//model2->render(forwardShader, camera);
+	model1->render(forwardShader, camera);
+	
 	window->finalizeFrame();
 }

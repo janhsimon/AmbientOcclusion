@@ -1,13 +1,25 @@
 #pragma once
 
 #include <assimp\mesh.h>
+#include <glm.hpp>
 #include <vector>
+
+#include "ForwardShader.hpp"
 
 struct Vertex
 {
-	float positionX, positionY, positionZ;
-	float colorR, colorG, colorB, colorA;
-	float normalX, normalY, normalZ;
+	float position[3];
+	float color[4];
+	float normal[3];
+	float boneWeight[4];
+	unsigned int boneID[4];
+};
+
+struct Bone
+{
+	glm::mat4 inverseBindMatrix;
+	glm::mat4 boneMatrix;
+	aiNode *node;
 };
 
 class Mesh
@@ -16,14 +28,19 @@ private:
 	GLuint VAO, VBO, IBO;
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
+	std::vector<Bone*> bones;
+	
+	aiNode *rootNode;
 
 	void populateVertices(const aiMesh *mesh);
 	void populateIndices(const aiMesh *mesh);
+	void populateBones(const aiMesh *mesh);
 
 public:
-	Mesh();
+	Mesh(aiNode *rootNode);
 	~Mesh();
 
 	bool load(const aiMesh *mesh);
-	void render() const;
+	void update(float delta);
+	void render(ForwardShader *forwardShader) const;
 };

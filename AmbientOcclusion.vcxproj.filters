@@ -84,7 +84,10 @@
     <None Include="bin\Shaders\Forward.fs.glsl">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="bin\Shaders\Forward.vs.glsl">
+    <None Include="bin\Shaders\Simple.vs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\Skinned.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

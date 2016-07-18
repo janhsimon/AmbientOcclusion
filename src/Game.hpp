@@ -12,7 +12,7 @@ private:
 	Window *window;
 	Input *input;
 	Camera *camera;
-	Model *testModel;
+	Model *model1, *model2;
 	ForwardShader *forwardShader;
 
 	bool load();

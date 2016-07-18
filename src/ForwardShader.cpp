@@ -5,12 +5,13 @@
 #include "ForwardShader.hpp"
 
 const std::string ForwardShader::WORLD_MATRIX_UNIFORM_NAME = "worldMatrix";
-const std::string ForwardShader::VIEW_MATRIX_UNIFORM_NAME = "viewMatrix";
-const std::string ForwardShader::PROJECTION_MATRIX_UNIFORM_NAME = "projectionMatrix";
+const std::string ForwardShader::VIEW_PROJECTION_MATRIX_UNIFORM_NAME = "viewProjectionMatrix";
+const std::string ForwardShader::BONE_MATRIX_UNIFORM_NAME = "boneMatrix";
+const std::string ForwardShader::BONE_MATRIX_IT_UNIFORM_NAME = "boneMatrixIT";
 
 bool ForwardShader::create()
 {
-	if (!load("Shaders\\Forward.vs.glsl", "", "Shaders\\Forward.fs.glsl"))
+	if (!load("Shaders\\Skinned.vs.glsl", "", "Shaders\\Forward.fs.glsl"))
 		return false;
 
 	if (!link())
@@ -21,10 +22,13 @@ bool ForwardShader::create()
 	if (!getUniformLocation(WORLD_MATRIX_UNIFORM_NAME, worldMatrixUniformLocation))
 		return false;
 
-	if (!getUniformLocation(VIEW_MATRIX_UNIFORM_NAME, viewMatrixUniformLocation))
+	if (!getUniformLocation(VIEW_PROJECTION_MATRIX_UNIFORM_NAME, viewProjectionMatrixUniformLocation))
 		return false;
 
-	if (!getUniformLocation(PROJECTION_MATRIX_UNIFORM_NAME, projectionMatrixUniformLocation))
+	if (!getUniformLocation(BONE_MATRIX_UNIFORM_NAME, boneMatrixUniformLocation))
+		return false;
+
+	if (!getUniformLocation(BONE_MATRIX_IT_UNIFORM_NAME, boneMatrixITUniformLocation))
 		return false;
 
 	GLenum error = glGetError();
@@ -37,9 +41,18 @@ bool ForwardShader::create()
 	return true;
 }
 
-void ForwardShader::setWorldViewProjectionUniforms(const glm::mat4 &worldMatrix, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix)
+void ForwardShader::setWorldViewProjectionUniforms(const glm::mat4 &worldMatrix, const glm::mat4 &viewProjectionMatrix)
 {
 	glUniformMatrix4fv(worldMatrixUniformLocation, 1, GL_FALSE, glm::value_ptr(worldMatrix));
-	glUniformMatrix4fv(viewMatrixUniformLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-	glUniformMatrix4fv(projectionMatrixUniformLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	glUniformMatrix4fv(viewProjectionMatrixUniformLocation, 1, GL_FALSE, glm::value_ptr(viewProjectionMatrix));
+}
+
+void ForwardShader::setBoneMatrixUniforms(float *boneMatrices)
+{
+	glUniformMatrix4fv(boneMatrixUniformLocation, 64, GL_FALSE, boneMatrices);
+}
+
+void ForwardShader::setBoneMatrixITUniforms(float *boneMatricesIT)
+{
+	glUniformMatrix3fv(boneMatrixITUniformLocation, 64, GL_FALSE, boneMatricesIT);
 }

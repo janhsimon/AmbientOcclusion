@@ -165,7 +165,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\Shaders\Forward.fs.glsl" />
-    <None Include="bin\Shaders\Forward.vs.glsl" />
+    <None Include="bin\Shaders\Simple.vs.glsl" />
+    <None Include="bin\Shaders\Skinned.vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
