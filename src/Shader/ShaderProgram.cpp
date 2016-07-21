@@ -2,8 +2,8 @@
 #include <fstream>
 #include <sstream>
 
-#include "Error.hpp"
 #include "ShaderProgram.hpp"
+#include "..\Error.hpp"
 
 bool ShaderProgram::loadShader(GLuint shader, const std::string &filename)
 {

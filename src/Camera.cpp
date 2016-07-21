@@ -2,7 +2,7 @@
 
 #include "Camera.hpp"
 
-const float Camera::MOVEMENT_SPEED = 0.5f; //0.002f;
+const float Camera::MOVEMENT_SPEED = 0.5f;
 const float Camera::PITCH_LOCK = 90.0f;
 
 float Camera::mouseSensitivity = 30.f;
@@ -72,7 +72,7 @@ void Camera::update(const Input *input, float delta)
 	doMouseLook(input);
 	doKeyboardInput(input, delta);
 
-	updateTransform(delta);
+	Transform::update(delta);
 
 	viewMatrix = glm::lookAt(position, position + getForward(), getUp());
 }

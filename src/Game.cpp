@@ -46,11 +46,20 @@ Game::Game()
 
 Game::~Game()
 {
-	if (model1)
-		delete model1;
+	if (sponzaModel)
+		delete sponzaModel;
 
-	if (model2)
-		delete model2;
+	if (pistolModel)
+		delete pistolModel;
+
+	if (soldierModel)
+		delete soldierModel;
+
+	if (simpleForwardShader)
+		delete simpleForwardShader;
+
+	if (skinnedForwardShader)
+		delete skinnedForwardShader;
 
 	if (camera)
 		delete camera;
@@ -73,16 +82,24 @@ bool Game::load()
 	assert(window);
 	camera = new Camera(glm::vec3(0.0f), window);
 
-	model1 = new Model(glm::vec3(0.0f, 0.0f, 0.0f));
-	if (!model1->load("Models\\ArmyPilot.x"))
+	sponzaModel = new Model();
+	if (!sponzaModel->load("Models\\Sponza.obj"))
 		return false;
 
-	//model2 = new Model(glm::vec3(0.0f, 0.0f, 0.0f));
-	//if (!model2->load("Models\\Sponza.obj"))
-		//return false;
+	pistolModel = new Model();
+	if (!pistolModel->load("Models\\Pistol.obj"))
+		return false;
 
-	forwardShader = new ForwardShader();
-	if (!forwardShader->create())
+	soldierModel = new AnimatedModel();
+	if (!soldierModel->load("Models\\ArmyPilot.x"))
+		return false;
+
+	simpleForwardShader = new SimpleForwardShader();
+	if (!simpleForwardShader->load())
+		return false;
+
+	skinnedForwardShader = new SkinnedForwardShader();
+	if (!skinnedForwardShader->load())
 		return false;
 
 	return true;
@@ -107,8 +124,8 @@ void Game::update(float delta)
 		{
 			if (event.key.keysym.sym == SDLK_F1)
 			{
-				assert(model1);
-				model1->changeAnimation();
+				assert(soldierModel);
+				soldierModel->changeAnimation();
 			}
 			else
 			{
@@ -124,18 +141,38 @@ void Game::update(float delta)
 	assert(input);
 	camera->update(input, delta);
 
-	assert(model1);
-	model1->update(delta);
+	assert(sponzaModel);
+	sponzaModel->update(delta);
+
+	assert(pistolModel);
+	pistolModel->update(delta);
+
+	assert(soldierModel);
+	soldierModel->update(delta);
 }
 
 void Game::render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	assert(forwardShader);
-	assert(camera);
-	//model2->render(forwardShader, camera);
-	model1->render(forwardShader, camera);
+	assert(simpleForwardShader);
+	assert(sponzaModel);
+	glUseProgram(simpleForwardShader->getProgram());
+	simpleForwardShader->setWorldViewProjectionUniforms(sponzaModel->getWorldMatrix(), camera->viewMatrix, camera->projectionMatrix);
+	sponzaModel->render();
+
+	assert(pistolModel);
+	pistolModel->setPosition(camera->getPosition() - camera->getRight() * 6.5f + camera->getForward() * 10.0f - camera->getUp() * 5.5f);
+	pistolModel->setPitchYawRoll(camera->getPitch(), camera->getYaw(), camera->getRoll());
+	pistolModel->setScale(6.0f);
+	simpleForwardShader->setWorldViewProjectionUniforms(pistolModel->getWorldMatrix(), camera->viewMatrix, camera->projectionMatrix);
+	pistolModel->render();
+
+	assert(skinnedForwardShader);
+	assert(soldierModel);
+	glUseProgram(skinnedForwardShader->getProgram());
+	skinnedForwardShader->setWorldViewProjectionUniforms(soldierModel->getWorldMatrix(), camera->viewMatrix, camera->projectionMatrix);
+	soldierModel->render(skinnedForwardShader);
 	
 	window->finalizeFrame();
 }

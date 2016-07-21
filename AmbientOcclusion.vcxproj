@@ -141,25 +141,33 @@
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Error.cpp" />
-    <ClCompile Include="src\ForwardShader.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\Mesh.cpp" />
-    <ClCompile Include="src\Model.cpp" />
-    <ClCompile Include="src\ShaderProgram.cpp" />
+    <ClCompile Include="src\Model\AnimatedModel.cpp" />
+    <ClCompile Include="src\Model\Bone.cpp" />
+    <ClCompile Include="src\Model\MathHelper.cpp" />
+    <ClCompile Include="src\Model\Model.cpp" />
+    <ClCompile Include="src\Model\Vertex.cpp" />
+    <ClCompile Include="src\Shader\SkinnedForwardShader.cpp" />
+    <ClCompile Include="src\Shader\ShaderProgram.cpp" />
+    <ClCompile Include="src\Shader\SimpleForwardShader.cpp" />
     <ClCompile Include="src\Transform.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.hpp" />
     <ClInclude Include="src\Error.hpp" />
-    <ClInclude Include="src\ForwardShader.hpp" />
     <ClInclude Include="src\Game.hpp" />
     <ClInclude Include="src\Input.hpp" />
-    <ClInclude Include="src\Mesh.hpp" />
-    <ClInclude Include="src\Model.hpp" />
-    <ClInclude Include="src\ShaderProgram.hpp" />
+    <ClInclude Include="src\Model\AnimatedModel.hpp" />
+    <ClInclude Include="src\Model\Bone.hpp" />
+    <ClInclude Include="src\Model\MathHelper.hpp" />
+    <ClInclude Include="src\Model\Model.hpp" />
+    <ClInclude Include="src\Model\Vertex.hpp" />
+    <ClInclude Include="src\Shader\SkinnedForwardShader.hpp" />
+    <ClInclude Include="src\Shader\ShaderProgram.hpp" />
+    <ClInclude Include="src\Shader\SimpleForwardShader.hpp" />
     <ClInclude Include="src\Transform.hpp" />
     <ClInclude Include="src\Window.hpp" />
   </ItemGroup>
