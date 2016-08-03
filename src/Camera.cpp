@@ -2,10 +2,9 @@
 
 #include "Camera.hpp"
 
-const float Camera::MOVEMENT_SPEED = 0.5f;
-const float Camera::PITCH_LOCK = 90.0f;
+const float Camera::MOVEMENT_SPEED = 3.5f;
 
-float Camera::mouseSensitivity = 30.f;
+float Camera::mouseSensitivity = 1.0f;
 
 Camera::Camera(const glm::vec3 &position, Window *window) : Transform(position)
 {
@@ -14,67 +13,69 @@ Camera::Camera(const glm::vec3 &position, Window *window) : Transform(position)
 	nearClipPlane = 0.1f;
 	farClipPlane = 5000.0f;
 
-	viewMatrix = glm::mat4(1.0f);
 	setFOV(90.f);
+
+	throwAwayFirstMouseMove = true;
 }
 
-void Camera::rotatePitch(float amount)
-{
-	pitch += amount * mouseSensitivity;
-
-	if (pitch < -PITCH_LOCK)
-		pitch = -PITCH_LOCK;
-	else if (pitch > PITCH_LOCK)
-		pitch = PITCH_LOCK;
-}
-
-void Camera::rotateYaw(float amount)
-{
-	yaw -= amount * mouseSensitivity;
-}
-
-void Camera::rotateRoll(float amount)
-{
-	roll += amount * mouseSensitivity;
-}
-
-void Camera::doKeyboardInput(const Input *input, float delta)
+void Camera::doKeyboardInput(const Input *input, float deltaTime)
 {
 	assert(input);
 
 	if (input->isForwardKeyDown() && !input->isBackwardKeyDown())
-		position += getForward() * MOVEMENT_SPEED * delta;
+		position += getForward() * MOVEMENT_SPEED * deltaTime;
 	else if (input->isBackwardKeyDown() && !input->isForwardKeyDown())
-		position -= getForward() * MOVEMENT_SPEED * delta;
+		position -= getForward() * MOVEMENT_SPEED * deltaTime;
 
 	if (input->isLeftKeyDown() && !input->isRightKeyDown())
-		position += getRight() * MOVEMENT_SPEED * delta;
+		position -= getRight() * MOVEMENT_SPEED * deltaTime;
 	else if (input->isRightKeyDown() && !input->isLeftKeyDown())
-		position -= getRight() * MOVEMENT_SPEED * delta;
+		position += getRight() * MOVEMENT_SPEED * deltaTime;
 }
 
 void Camera::doMouseLook(const Input *input)
 {
 	assert(window);
-	const int halfScreenWidth = window->getWidth() / 2;
-	const int halfScreenHeight = window->getHeight() / 2;
+	const unsigned int halfScreenWidth = window->getWidth() / 2;
+	const unsigned int halfScreenHeight = window->getHeight() / 2;
 
-	assert(input);
-	rotateYaw((input->getMouseX() - halfScreenWidth) / (float)halfScreenWidth);
-	rotatePitch((input->getMouseY() - halfScreenHeight) / (float)halfScreenHeight);
+	if (throwAwayFirstMouseMove)
+		throwAwayFirstMouseMove = false;
+	else
+	{
+		assert(input);
+		float yaw	= ((input->getMouseX() - (float)halfScreenWidth) / halfScreenWidth) * mouseSensitivity;
+		float pitch = ((input->getMouseY() - (float)halfScreenHeight) / halfScreenHeight) * mouseSensitivity;
+		rotateYaw(yaw);
+		rotatePitch(-pitch);
+	}
 
 	window->warpMouse(halfScreenWidth, halfScreenHeight);
 }
 
-void Camera::update(const Input *input, float delta)
+void Camera::update(const Input *input, float deltaTime)
 {
 	assert(input);
 	doMouseLook(input);
-	doKeyboardInput(input, delta);
+	doKeyboardInput(input, deltaTime);
 
-	Transform::update(delta);
-
+	Transform::update(deltaTime);
 	viewMatrix = glm::lookAt(position, position + getForward(), getUp());
+}
+
+glm::vec4 Camera::projectPointToScreenSpace(const glm::vec4 &point) const
+{
+	glm::vec4 proj = projectionMatrix * viewMatrix * point;
+
+	for (unsigned int i = 0; i < 3; ++i)
+		proj[i] /= proj[3];
+	
+	return proj;
+}
+
+glm::vec4 Camera::projectPointToScreenSpace(const glm::vec3 &point) const
+{
+	return projectPointToScreenSpace(glm::vec4(point, 1.0f));
 }
 
 void Camera::setFOV(float fov)

@@ -1,24 +1,22 @@
 #pragma once
 
+#include "Animation.hpp"
 #include "Model.hpp"
-#include "..\Shader\SkinnedForwardShader.hpp"
+//#include "..\Shader\SkinnedForwardShader.hpp"
 
 class AnimatedModel : public Model
 {
 private:
 	static const unsigned int MAX_BONES;
 
-	std::vector<Bone> bones;
-	aiNode *rootNode;
-	glm::mat4 *finalBoneMatrices;
-	aiAnimation **animations;
-	float animationTimer;
-	float animationSpeed;
+	std::vector<Bone*> bones;
+	std::vector<Animation> animations;
 	unsigned int currentAnimation;
-	unsigned int currentKey;
-	unsigned int numAnimations;
+	glm::mat4 *finalBoneMatrices;
 
-	void loadBones(const aiMesh *mesh, unsigned int startingVertex);
+	Bone *getBoneFromName(const std::string &name);
+	void loadBones(const aiScene *model, const aiMesh *mesh, unsigned int startingVertex);
+	void loadAnimations(const aiScene *model);
 
 public:
 	AnimatedModel(const glm::vec3 &position = glm::vec3(0.0f));
@@ -26,6 +24,6 @@ public:
 
 	bool load(const std::string &filename);
 	void changeAnimation();
-	void update(float delta);
-	void render(SkinnedForwardShader *skinnedForwardShader);
+	void update(float deltaTime);
+	void render(/*SkinnedForwardShader *skinnedForwardShader*/);
 };

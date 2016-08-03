@@ -1,27 +1,24 @@
 #include "Bone.hpp"
 #include "MathHelper.hpp"
 
-Bone::Bone(glm::mat4 &inverseBindPoseMatrix, const aiNode *rootNode, const aiNode *node)
+Bone::Bone(const std::string &name, glm::mat4 &inverseBindPoseMatrix)
 {
-	assert(rootNode);
-	assert(node);
+	this->name = name;
 	this->inverseBindPoseMatrix = inverseBindPoseMatrix;
-	this->rootNode = rootNode;
-	this->node = node;
 }
 
-glm::mat4 Bone::getFinalMatrix()
+glm::mat4 Bone::getFinalMatrix() const
 {
-	const aiNode *currentNode = node;
-	assert(currentNode);
+	// TODO: boneMatrix used to be an aiMatrix4x4 which is transposed, check if this code needs to be flipped!
 
-	aiMatrix4x4 boneMatrix;
-	do
+	glm::mat4 boneMatrix = flatMatrix;
+
+	Bone *currentBone = parent;
+	while (currentBone)
 	{
-		boneMatrix = currentNode->mTransformation * boneMatrix;
-		currentNode = currentNode->mParent;
+		boneMatrix = currentBone->flatMatrix * boneMatrix;
+		currentBone = currentBone->parent;
 	}
-	while (currentNode);
-
-	return MathHelper::aiMatrix4x4ToGlm(boneMatrix) * inverseBindPoseMatrix;
+	
+	return boneMatrix * inverseBindPoseMatrix;
 }

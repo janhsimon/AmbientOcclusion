@@ -6,7 +6,7 @@ class Input
 {
 private:
 	bool forwardKeyDown, backwardKeyDown, leftKeyDown, rightKeyDown;
-	int mouseX, mouseY;
+	unsigned int mouseX, mouseY;
 
 	SDL_Keycode forwardKey, backwardKey, leftKey, rightKey;
 
@@ -22,6 +22,6 @@ public:
 	inline bool isLeftKeyDown() const { return leftKeyDown; }
 	inline bool isRightKeyDown() const { return rightKeyDown; }
 
-	inline int getMouseX() const { return mouseX; }
-	inline int getMouseY() const { return mouseY; }
+	inline unsigned int getMouseX() const { return mouseX; }
+	inline unsigned int getMouseY() const { return mouseY; }
 };

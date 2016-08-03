@@ -1,5 +1,8 @@
+#include <assimp\Importer.hpp>
+#include <assimp\postprocess.h>
 #include <gtc\matrix_transform.hpp>
 #include <gtx\quaternion.hpp>
+#include <sstream>
 
 #include "AnimatedModel.hpp"
 #include "MathHelper.hpp"
@@ -9,12 +12,8 @@ const unsigned int AnimatedModel::MAX_BONES = 100;
 
 AnimatedModel::AnimatedModel(const glm::vec3 &position) : Model(position)
 {
-	finalBoneMatrices = new glm::mat4[MAX_BONES];
-	animationTimer = 0.0f;
-	animationSpeed = 20.0f;
 	currentAnimation = 0;
-	currentKey = 0;
-	numAnimations = 0;
+	finalBoneMatrices = new glm::mat4[MAX_BONES];
 }
 
 AnimatedModel::~AnimatedModel()
@@ -24,19 +23,35 @@ AnimatedModel::~AnimatedModel()
 	glDeleteVertexArrays(1, &VAO);
 }
 
-void AnimatedModel::loadBones(const aiMesh *mesh, unsigned int startingVertex)
+Bone *AnimatedModel::getBoneFromName(const std::string &name)
+{
+	for (Bone *bone : bones)
+	{
+		if (bone->getName().compare(name) == 0)
+			return bone;
+	}
+
+	return nullptr;
+}
+
+void AnimatedModel::loadBones(const aiScene *model, const aiMesh *mesh, unsigned int startingVertex)
 {
 	assert(mesh);
 	for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
-	// loop through each vertex in the mesh
+	// loop through each bone in the model
 	{
 		// store the bone itself
 		const aiBone *bone = mesh->mBones[boneIndex];
 		assert(bone);
-		assert(rootNode);
-		aiNode *boneNode = rootNode->FindNode(bone->mName);
+		assert(model->mRootNode);
+		aiNode *boneNode = model->mRootNode->FindNode(bone->mName);
 		assert(boneNode);
-		bones.push_back(Bone(MathHelper::aiMatrix4x4ToGlm(bone->mOffsetMatrix), rootNode, boneNode));
+		glm::mat4 inverseBindPoseMatrix = MathHelper::aiMatrix4x4ToGlm(bone->mOffsetMatrix);
+		bones.push_back(new Bone(bone->mName.C_Str(), inverseBindPoseMatrix));
+
+		std::stringstream s;
+		s << "Bone \"" << bone->mName.C_Str() << "\" added.";
+		//Error::report(s.str());
 
 		// and change the vertices so that they include our bone info (in case they are affected by it)
 		for (unsigned int vertexWeightIndex = 0; vertexWeightIndex < bone->mNumWeights; ++vertexWeightIndex)
@@ -59,26 +74,110 @@ void AnimatedModel::loadBones(const aiMesh *mesh, unsigned int startingVertex)
 			}
 		}
 	}
+
+	// now lets identify parents
+	for (Bone *bone : bones)
+	{
+		aiNode *node = model->mRootNode->FindNode(bone->getName().c_str());
+
+		if (!node)
+		{
+			Error::report("Failed to find model node for bone \"" + bone->getName() + "\".");
+			continue;
+		}
+
+		aiNode *parentNode = node->mParent;
+
+		if (!parentNode)
+			continue;
+
+		Bone *parent = getBoneFromName(parentNode->mName.C_Str());
+		bone->setParent(parent);
+	}
+}
+
+void AnimatedModel::loadAnimations(const aiScene *model)
+{
+	assert(model);
+
+	animations.clear();
+	currentAnimation = 0;
+
+	for (unsigned int animationIndex = 0; animationIndex < model->mNumAnimations; ++animationIndex)
+	// loop through each animation in the model
+	{
+		const aiAnimation *animation = model->mAnimations[animationIndex];
+		assert(animation);
+
+		Animation newAnimation;
+
+		for (unsigned int channelIndex = 0; channelIndex < animation->mNumChannels; ++channelIndex)
+		// loop through each channel in the animation
+		{
+			const aiNodeAnim *channel = animation->mChannels[channelIndex];
+			assert(channel);
+			assert(model->mRootNode);
+			Bone *affectedBone = getBoneFromName(channel->mNodeName.C_Str());
+			
+			if (!affectedBone)
+			{
+				std::stringstream s;
+				s << "Failed to find affected bone \"" << channel->mNodeName.C_Str() << "\" for animation \"" << animation->mName.C_Str() << "\".";
+				//Error::report(s.str());
+				continue;
+			}
+
+			for (unsigned int positionKeyIndex = 0; positionKeyIndex < channel->mNumPositionKeys; ++positionKeyIndex)
+			// loop through each position key in the channel
+			{
+				const aiVector3D &translationVector = channel->mPositionKeys[positionKeyIndex].mValue;
+				glm::mat4 translation = glm::translate(glm::mat4(), glm::vec3(translationVector.x, translationVector.y, translationVector.z));
+				newAnimation.addTranslationKey(affectedBone, translation);
+			}
+			
+			for (unsigned int rotationKeyIndex = 0; rotationKeyIndex < channel->mNumRotationKeys; ++rotationKeyIndex)
+			// loop through each rotation key in the channel
+			{
+				const aiQuaternion &rotationQuaternion = channel->mRotationKeys[rotationKeyIndex].mValue;
+				glm::quat rotation = glm::quat(rotationQuaternion.w, rotationQuaternion.x, rotationQuaternion.y, rotationQuaternion.z);
+				newAnimation.addRotationKey(affectedBone, rotation);
+			}
+
+			for (unsigned int scaleKeyIndex = 0; scaleKeyIndex < channel->mNumScalingKeys; ++scaleKeyIndex)
+			// loop through each scale key in the channel
+			{
+				const aiVector3D &scaleVector = channel->mPositionKeys[scaleKeyIndex].mValue;
+				glm::mat4 scale = glm::translate(glm::mat4(), glm::vec3(scaleVector.x, scaleVector.y, scaleVector.z));
+				newAnimation.addScaleKey(affectedBone, scale);
+			}
+		}
+
+		animations.push_back(newAnimation);
+	}
 }
 
 bool AnimatedModel::load(const std::string &filename)
 {
-	const aiScene *model = Model::readFile(filename);
+	Assimp::Importer importer;
+	const aiScene *model = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+
 	if (!model)
+	// if there was an issue loading the model
+	{
+		Error::report("Failed to load model \"" + filename + "\": " + importer.GetErrorString());
 		return false;
+	}
 
-	rootNode = model->mRootNode;
-	assert(rootNode);
-
-	animations = model->mAnimations;
-	assert(animations);
-
-	numAnimations = model->mNumAnimations;
+	if (model->mNumMeshes <= 0)
+	{
+		Error::report("Failed to load model \"" + filename + "\": No mesh data found.");
+		return false;
+	}
 
 	vertices.clear();
 	indices.clear();
 	bones.clear();
-
+	
 	for (unsigned int meshIndex = 0; meshIndex < model->mNumMeshes; ++meshIndex)
 	// loop through each mesh in the model
 	{
@@ -87,8 +186,34 @@ bool AnimatedModel::load(const std::string &filename)
 
 		unsigned int startingVertex = loadVertices(mesh);
 		loadIndices(mesh, startingVertex);
-		loadBones(mesh, startingVertex);
+		loadBones(model, mesh, startingVertex);
 	}
+
+	if (vertices.size() <= 0)
+	{
+		Error::report("Failed to load model \"" + filename + "\": No vertex data found.");
+		return false;
+	}
+
+	if (indices.size() <= 0)
+	{
+		Error::report("Failed to load model \"" + filename + "\": No index data found.");
+		return false;
+	}
+
+	if (bones.size() <= 0)
+	{
+		Error::report("Failed to load model \"" + filename + "\": No bone data found.");
+		return false;
+	}
+
+	if (model->mNumAnimations <= 0)
+	{
+		Error::report("Failed to load model \"" + filename + "\": No animation data found.");
+		return false;
+	}
+
+	loadAnimations(model);
 	
 	glBindVertexArray(VAO);
 
@@ -129,61 +254,27 @@ void AnimatedModel::changeAnimation()
 {
 	++currentAnimation;
 
-	if (currentAnimation >= numAnimations)
+	if (currentAnimation >= animations.size())
 		currentAnimation = 0;
 }
 
-void AnimatedModel::update(float delta)
+void AnimatedModel::update(float deltaTime)
 {
-	assert(animations);
-	aiAnimation *animation = animations[currentAnimation];
-	assert(animation);
+	assert(currentAnimation < animations.size());
+	Animation &animation = animations[currentAnimation];
 
-	if (animationTimer > animationSpeed)
+	for (Bone *bone : bones)
 	{
-		++currentKey;
-
-		if (currentKey >= animation->mChannels[0]->mNumPositionKeys)
-			currentKey = 0;
-
-		animationTimer = 0.0f;
-	}
-	else
-		animationTimer += delta;
-
-	for (unsigned int channelIndex = 0; channelIndex < animation->mNumChannels; ++channelIndex)
-	// loop through each channel that is affected by this animation
-	{
-		aiNodeAnim *channel = animation->mChannels[channelIndex];
-		assert(channel);
-
-		glm::vec3 translationVector = glm::vec3(channel->mPositionKeys[currentKey].mValue.x, channel->mPositionKeys[currentKey].mValue.y, channel->mPositionKeys[currentKey].mValue.z);
-		glm::quat rotationQuaternion = glm::quat(channel->mRotationKeys[currentKey].mValue.w, channel->mRotationKeys[currentKey].mValue.x, channel->mRotationKeys[currentKey].mValue.y, channel->mRotationKeys[currentKey].mValue.z);
-		glm::vec3 scaleVector = glm::vec3(channel->mScalingKeys[currentKey].mValue.x, channel->mScalingKeys[currentKey].mValue.y, channel->mScalingKeys[currentKey].mValue.z);
-
-		glm::mat4 translation = glm::translate(glm::mat4(), translationVector);
-		glm::mat4 rotation = glm::toMat4(rotationQuaternion);
-		glm::mat4 scale = glm::scale(glm::mat4(), scaleVector);
-
-		assert(rootNode);
-		aiNode *animationNode = rootNode->FindNode(channel->mNodeName);
-		assert(animationNode);
-		animationNode->mTransformation = MathHelper::glmMat4ToAi(translation * rotation * scale);
+		glm::mat4 translation = animation.getTranslation(bone);
+		glm::mat4 rotation = glm::toMat4(animation.getRotation(bone));
+		glm::mat4 scaling = animation.getScale(bone);
+		bone->setFlatMatrix(translation * rotation * scaling);
 	}
 
-	/*
-	for (unsigned int boneIndex = 0; boneIndex < MAX_BONES; ++boneIndex)
-	// loop through each bone
-	{
-		if (boneIndex < bones.size())
-			finalBoneMatrices[boneIndex] = bones[boneIndex].getFinalMatrix();
-	}
-	*/
-
-	Model::update(delta);
+	Model::update(deltaTime);
 }
 
-void AnimatedModel::render(SkinnedForwardShader *skinnedForwardShader)
+void AnimatedModel::render(/*SkinnedForwardShader *skinnedForwardShader*/)
 {
 	float *data = new float[MAX_BONES * 16];
 
@@ -192,20 +283,20 @@ void AnimatedModel::render(SkinnedForwardShader *skinnedForwardShader)
 		glm::mat4 totalMatrix = glm::mat4();
 
 		if (i < bones.size())
-			totalMatrix = bones[i].getFinalMatrix();
+			totalMatrix = bones[i]->getFinalMatrix();
 
 		for (int j = 0; j < 4; ++j)
 		{
 			for (int k = 0; k < 4; ++k)
 			{
 				const unsigned int index = i * 16 + j * 4 + k;
-				data[index] = totalMatrix[j][k];//finalBoneMatrices[i][j][k];
+				data[index] = totalMatrix[j][k];
 			}
 		}
 	}
 
-	assert(skinnedForwardShader);
-	skinnedForwardShader->setBoneMatrixUniforms(data, MAX_BONES);
+	//assert(skinnedForwardShader);
+	//skinnedForwardShader->setBoneMatrixUniforms(data, MAX_BONES);
 	delete data;
 
 	Model::render();

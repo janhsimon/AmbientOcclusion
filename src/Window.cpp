@@ -58,6 +58,8 @@ bool Window::initGL()
 
 	glClearColor(0.3f, 0.3f, 0.6f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (glGetError() != GL_NO_ERROR)
 		return false;
@@ -84,15 +86,6 @@ bool Window::load(unsigned int width, unsigned int height)
 
 	done = false;
 	return true;
-}
-
-void Window::setTitleInfo(const std::string &info)
-{
-	assert(window);
-	std::stringstream s;
-	s << "Ambient Occlusion [" << info << "]";
-	SDL_SetWindowTitle(window, s.str().c_str());
-
 }
 
 void Window::warpMouse(unsigned int x, unsigned int y)

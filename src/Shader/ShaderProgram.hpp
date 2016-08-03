@@ -1,25 +1,22 @@
 #pragma once
 
-#include <glew.h>
+#include <unordered_map>
+
+#include "Shader.hpp"
 
 class ShaderProgram
 {
 private:
-	std::string filename;
-
-	bool loadShader(GLuint shader, const std::string &filename);
-	bool compileShader(GLuint shader, const std::string &filename);
-
-protected:
-	GLuint program;
-	GLuint vertexShader, geometryShader, fragmentShader;
-
-	~ShaderProgram();
-
-	bool load(const std::string &vertexShaderFilename, const std::string &geometryShaderFilename, const std::string &fragmentShaderFilename);
-	bool link();
-	const bool getUniformLocation(const std::string &uniformName, GLint &locationOut);
+	Shader *vertexShader, *fragmentShader;
+	GLuint handle;
+	std::unordered_map<std::string, GLint> uniforms;
 
 public:
-	inline GLuint getProgram() const { return program; }
+	~ShaderProgram();
+
+	bool load(Shader *vertexShader, Shader *fragmentShader);
+	bool registerUniform(const std::string &name);
+	GLint getUniform(const std::string &name);
+
+	inline GLuint getHandle() const { return handle; }
 };

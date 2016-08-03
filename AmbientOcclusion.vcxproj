@@ -145,13 +145,15 @@
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Model\AnimatedModel.cpp" />
+    <ClCompile Include="src\Model\Animation.cpp" />
     <ClCompile Include="src\Model\Bone.cpp" />
     <ClCompile Include="src\Model\MathHelper.cpp" />
     <ClCompile Include="src\Model\Model.cpp" />
+    <ClCompile Include="src\Model\ModelManager.cpp" />
     <ClCompile Include="src\Model\Vertex.cpp" />
-    <ClCompile Include="src\Shader\SkinnedForwardShader.cpp" />
+    <ClCompile Include="src\Renderer\SceneRenderer.cpp" />
+    <ClCompile Include="src\Shader\Shader.cpp" />
     <ClCompile Include="src\Shader\ShaderProgram.cpp" />
-    <ClCompile Include="src\Shader\SimpleForwardShader.cpp" />
     <ClCompile Include="src\Transform.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
@@ -161,20 +163,24 @@
     <ClInclude Include="src\Game.hpp" />
     <ClInclude Include="src\Input.hpp" />
     <ClInclude Include="src\Model\AnimatedModel.hpp" />
+    <ClInclude Include="src\Model\Animation.hpp" />
     <ClInclude Include="src\Model\Bone.hpp" />
     <ClInclude Include="src\Model\MathHelper.hpp" />
     <ClInclude Include="src\Model\Model.hpp" />
+    <ClInclude Include="src\Model\ModelManager.hpp" />
     <ClInclude Include="src\Model\Vertex.hpp" />
-    <ClInclude Include="src\Shader\SkinnedForwardShader.hpp" />
+    <ClInclude Include="src\Renderer\SceneRenderer.hpp" />
+    <ClInclude Include="src\Shader\Shader.hpp" />
     <ClInclude Include="src\Shader\ShaderProgram.hpp" />
-    <ClInclude Include="src\Shader\SimpleForwardShader.hpp" />
     <ClInclude Include="src\Transform.hpp" />
     <ClInclude Include="src\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\Shaders\Forward.fs.glsl" />
-    <None Include="bin\Shaders\Simple.vs.glsl" />
-    <None Include="bin\Shaders\Skinned.vs.glsl" />
+    <None Include="bin\Shaders\Lit.fs.glsl" />
+    <None Include="bin\Shaders\NoTransform.vs.glsl" />
+    <None Include="bin\Shaders\StandardTransform.vs.glsl" />
+    <None Include="bin\Shaders\SkinnedTransform.vs.glsl" />
+    <None Include="bin\Shaders\Unlit.fs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

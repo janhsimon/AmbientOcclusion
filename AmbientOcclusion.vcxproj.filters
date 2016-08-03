@@ -13,6 +13,9 @@
     <Filter Include="Source\Model">
       <UniqueIdentifier>{0174253d-9d91-4eea-b6da-ed264e8f1d3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Renderer">
+      <UniqueIdentifier>{46053a79-8193-434d-ba3c-eb711a1ace19}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp">
@@ -36,28 +39,34 @@
     <ClCompile Include="src\Window.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="src\Shader\ShaderProgram.cpp">
-      <Filter>Source\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\SimpleForwardShader.cpp">
-      <Filter>Source\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\SkinnedForwardShader.cpp">
-      <Filter>Source\Shader</Filter>
-    </ClCompile>
     <ClCompile Include="src\Model\AnimatedModel.cpp">
       <Filter>Source\Model</Filter>
     </ClCompile>
     <ClCompile Include="src\Model\Bone.cpp">
       <Filter>Source\Model</Filter>
     </ClCompile>
-    <ClCompile Include="src\Model\MathHelper.cpp">
-      <Filter>Source\Model</Filter>
-    </ClCompile>
     <ClCompile Include="src\Model\Model.cpp">
       <Filter>Source\Model</Filter>
     </ClCompile>
     <ClCompile Include="src\Model\Vertex.cpp">
+      <Filter>Source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model\Animation.cpp">
+      <Filter>Source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\Shader.cpp">
+      <Filter>Source\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderProgram.cpp">
+      <Filter>Source\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\SceneRenderer.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model\ModelManager.cpp">
+      <Filter>Source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model\MathHelper.cpp">
       <Filter>Source\Model</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,15 +89,6 @@
     <ClInclude Include="src\Window.hpp">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="src\Shader\ShaderProgram.hpp">
-      <Filter>Source\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\SimpleForwardShader.hpp">
-      <Filter>Source\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\SkinnedForwardShader.hpp">
-      <Filter>Source\Shader</Filter>
-    </ClInclude>
     <ClInclude Include="src\Model\AnimatedModel.hpp">
       <Filter>Source\Model</Filter>
     </ClInclude>
@@ -104,15 +104,36 @@
     <ClInclude Include="src\Model\Vertex.hpp">
       <Filter>Source\Model</Filter>
     </ClInclude>
+    <ClInclude Include="src\Model\Animation.hpp">
+      <Filter>Source\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\Shader.hpp">
+      <Filter>Source\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderProgram.hpp">
+      <Filter>Source\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\SceneRenderer.hpp">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Model\ModelManager.hpp">
+      <Filter>Source\Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\Shaders\Forward.fs.glsl">
+    <None Include="bin\Shaders\StandardTransform.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="bin\Shaders\Simple.vs.glsl">
+    <None Include="bin\Shaders\SkinnedTransform.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="bin\Shaders\Skinned.vs.glsl">
+    <None Include="bin\Shaders\Lit.fs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\NoTransform.vs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\Unlit.fs.glsl">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

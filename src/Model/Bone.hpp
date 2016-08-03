@@ -7,12 +7,17 @@
 class Bone
 {
 private:
+	Bone *parent;
+	std::string name;
 	glm::mat4 inverseBindPoseMatrix;
-	const aiNode *rootNode;
-	const aiNode *node;
+	glm::mat4 flatMatrix;
 
 public:
-	Bone(glm::mat4 &inverseBindPoseMatrix, const aiNode *rootNode, const aiNode *node);
+	Bone(const std::string &name, glm::mat4 &inverseBindPoseMatrix);
 
-	glm::mat4 getFinalMatrix();
+	glm::mat4 getFinalMatrix() const;
+	
+	inline std::string getName() const { return name; }
+	inline void setParent(Bone *bone) { this->parent = parent; }
+	inline void setFlatMatrix(const glm::mat4 &flatMatrix) { this->flatMatrix = flatMatrix; }
 };

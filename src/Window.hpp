@@ -19,7 +19,6 @@ public:
 
 	bool load(unsigned int width, unsigned int height);
 	void warpMouse(unsigned int x, unsigned int y);
-	void setTitleInfo(const std::string &info);
 	void finalizeFrame();
 
 	inline unsigned int getWidth() const { return width; }

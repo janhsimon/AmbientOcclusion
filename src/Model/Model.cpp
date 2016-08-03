@@ -1,9 +1,8 @@
+#include <assimp\Importer.hpp>
 #include <assimp\postprocess.h>
 
 #include "Model.hpp"
 #include "..\Error.hpp"
-
-Assimp::Importer Model::importer = Assimp::Importer();
 
 Model::Model(const glm::vec3 &position) : Transform(position)
 {
@@ -19,30 +18,17 @@ Model::~Model()
 	glDeleteVertexArrays(1, &VAO);
 }
 
-const aiScene *Model::readFile(const std::string &filename)
+unsigned int Model::loadVertices(const aiMesh *mesh, const aiColor4D &fallbackColor)
 {
-	const aiScene *model = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
-
-	if (!model)
-	// if there was an issue loading the model
-	{
-		Error::report("Failed to load model \"" + filename + "\": " + importer.GetErrorString());
-		return nullptr;
-	}
-
-	return model;
-}
-
-unsigned int Model::loadVertices(const aiMesh *mesh)
-{
-	unsigned int startingVertex = (unsigned int)vertices.size();
-
 	assert(mesh);
+
+	unsigned int startingVertex = (unsigned int)vertices.size();
+	
 	for (unsigned int vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex)
 	// loop through each vertex in the mesh
 	{
 		const aiVector3D position = mesh->HasPositions() ? mesh->mVertices[vertexIndex] : aiVector3D(0.0f, 0.0f, 0.0f);
-		const aiColor4D color = mesh->HasVertexColors(0) ? mesh->mColors[0][vertexIndex] : aiColor4D(0.7f, 0.7f, 0.7f, 1.0f);
+		const aiColor4D color = mesh->HasVertexColors(0) ? mesh->mColors[0][vertexIndex] : fallbackColor;
 		const aiVector3D normal = mesh->HasNormals() ? mesh->mNormals[vertexIndex] : aiVector3D(0.0f, 1.0f, 0.0f);
 
 		vertices.push_back(Vertex(position, normal, color));
@@ -54,6 +40,7 @@ unsigned int Model::loadVertices(const aiMesh *mesh)
 void Model::loadIndices(const aiMesh *mesh, unsigned int startingVertex)
 {
 	assert(mesh);
+
 	for (unsigned int faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex)
 	// loop through each face in the mesh
 	{
@@ -70,11 +57,17 @@ void Model::loadIndices(const aiMesh *mesh, unsigned int startingVertex)
 	}
 }
 
-bool Model::load(const std::string &filename)
+bool Model::load(const std::string &filename, const aiColor4D &fallbackColor)
 {
-	const aiScene *model = readFile(filename);
+	Assimp::Importer importer;
+	const aiScene *model = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+
 	if (!model)
+	// if there was an issue loading the model
+	{
+		Error::report("Failed to load model \"" + filename + "\": " + importer.GetErrorString());
 		return false;
+	}
 
 	vertices.clear();
 	indices.clear();
@@ -85,8 +78,20 @@ bool Model::load(const std::string &filename)
 		const aiMesh *mesh = model->mMeshes[meshIndex];
 		assert(mesh);
 		
-		unsigned int startingVertex = loadVertices(mesh);
+		unsigned int startingVertex = loadVertices(mesh, fallbackColor);
 		loadIndices(mesh, startingVertex);
+	}
+
+	if (vertices.size() <= 0)
+	{
+		Error::report("Failed to load model \"" + filename + "\": No vertex data found.");
+		return false;
+	}
+
+	if (indices.size() <= 0)
+	{
+		Error::report("Failed to load model \"" + filename + "\": No index data found.");
+		return false;
 	}
 
 	glBindVertexArray(VAO);
@@ -120,9 +125,9 @@ bool Model::load(const std::string &filename)
 	return true;
 }
 
-void Model::update(float delta)
+void Model::update(float deltaTime)
 {
-	Transform::update(delta);
+	Transform::update(deltaTime);
 }
 
 void Model::render()
