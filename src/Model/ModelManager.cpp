@@ -5,9 +5,8 @@
 
 ModelManager::~ModelManager()
 {
-	if (unitQuad) delete unitQuad;
-	if (pointLightVolumeModel) delete pointLightVolumeModel;
-	if (testSphereModel) delete testSphereModel;
+	if (directionalLightGeometry) delete directionalLightGeometry;
+	if (pointLightGeometry) delete pointLightGeometry;
 
 	for (auto model : models) delete model;
 	for (auto animatedModel : animatedModels) delete animatedModel;
@@ -15,26 +14,19 @@ ModelManager::~ModelManager()
 
 bool ModelManager::load()
 {
-	if (!Error::checkMemory(unitQuad = new Model())) return false;
-	if (!unitQuad->load("Models\\UnitQuad.obj")) return false;
+	if (!Error::checkMemory(directionalLightGeometry = new Model())) return false;
+	if (!directionalLightGeometry->load("Models\\DirectionalLightGeometry.obj")) return false;
 
-	if (!Error::checkMemory(pointLightVolumeModel = new Model())) return false;
-	if (!pointLightVolumeModel->load("Models\\PointLightVolume.obj", aiColor3D(0.0f, 1.0f, 0.0f))) return false;
-
-	if (!Error::checkMemory(testSphereModel = new Model())) return false;
-	if (!testSphereModel->load("Models\\UnitSphere.obj", aiColor3D(1.0f, 0.0f, 0.0f))) return false;
-
-	testSphereModel->setPosition(glm::vec3(-1000.0f, 100.0f, 0.0f));
-	testSphereModel->setScale(glm::vec3(64.0f, 64.0f, 64.0f));
-	testSphereModel->update(0.0f);
+	if (!Error::checkMemory(pointLightGeometry = new Model())) return false;
+	if (!pointLightGeometry->load("Models\\PointLightGeometry.obj")) return false;
 
 	return true;
 }
 
-bool ModelManager::loadModel(const std::string &filename)
+bool ModelManager::loadModel(const std::string &filename, const glm::vec3 &position)
 {
 	Model *model;
-	if (!Error::checkMemory(model = new Model())) return false;
+	if (!Error::checkMemory(model = new Model(position))) return false;
 
 	if (!model->load(filename))
 		return false;
@@ -43,10 +35,10 @@ bool ModelManager::loadModel(const std::string &filename)
 	return true;
 }
 
-bool ModelManager::loadAnimatedModel(const std::string &filename)
+bool ModelManager::loadAnimatedModel(const std::string &filename, const glm::vec3 &position)
 {
 	AnimatedModel *animatedModel;
-	if (!Error::checkMemory(animatedModel = new AnimatedModel())) return false;
+	if (!Error::checkMemory(animatedModel = new AnimatedModel(position))) return false;
 
 	if (!animatedModel->load(filename))
 		return false;

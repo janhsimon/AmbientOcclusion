@@ -2,6 +2,7 @@
 
 #include "GBuffer.hpp"
 #include "..\Camera.hpp"
+#include "..\Light\LightManager.hpp"
 #include "..\Model\ModelManager.hpp"
 #include "..\Shader\Shader.hpp"
 #include "..\Shader\ShaderProgram.hpp"
@@ -10,9 +11,10 @@ class SceneRenderer
 {
 private:
 	const ModelManager *modelManager;
+	const LightManager *lightManager;
 	Shader *geometryVertexShader, *skinnedGeometryVertexShader, *lightingVertexShader;
-	Shader *geometryFragmentShader, *lightingFragmentShader;
-	ShaderProgram *geometryShaderProgram, *skinnedGeometryShaderProgram, *lightingShaderProgram;
+	Shader *geometryFragmentShader, *directionalLightFragmentShader;
+	ShaderProgram *geometryShaderProgram, *skinnedGeometryShaderProgram, *directionalLightShaderProgram;
 	GBuffer *gBuffer;
 
 	bool loadShaders();
@@ -25,6 +27,6 @@ private:
 public:
 	~SceneRenderer();
 
-	bool load(const ModelManager *modelManager);
+	bool load(const ModelManager *modelManager, const LightManager *lightManager);
 	void render(const Camera *camera);
 };

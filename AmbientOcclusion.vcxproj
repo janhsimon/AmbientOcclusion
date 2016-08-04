@@ -143,6 +143,8 @@
     <ClCompile Include="src\Error.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Input.cpp" />
+    <ClCompile Include="src\Light\DirectionalLight.cpp" />
+    <ClCompile Include="src\Light\LightManager.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Model\AnimatedModel.cpp" />
     <ClCompile Include="src\Model\Animation.cpp" />
@@ -163,6 +165,8 @@
     <ClInclude Include="src\Error.hpp" />
     <ClInclude Include="src\Game.hpp" />
     <ClInclude Include="src\Input.hpp" />
+    <ClInclude Include="src\Light\DirectionalLight.hpp" />
+    <ClInclude Include="src\Light\LightManager.hpp" />
     <ClInclude Include="src\Model\AnimatedModel.hpp" />
     <ClInclude Include="src\Model\Animation.hpp" />
     <ClInclude Include="src\Model\Bone.hpp" />
@@ -179,7 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\Shaders\Geometry.fs.glsl" />
-    <None Include="bin\Shaders\Lighting.fs.glsl" />
+    <None Include="bin\Shaders\DirectionalLight.fs.glsl" />
     <None Include="bin\Shaders\Lighting.vs.glsl" />
     <None Include="bin\Shaders\Geometry.vs.glsl" />
     <None Include="bin\Shaders\SkinnedGeometry.vs.glsl" />

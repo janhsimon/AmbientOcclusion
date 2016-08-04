@@ -16,6 +16,9 @@
     <Filter Include="Source\Renderer">
       <UniqueIdentifier>{46053a79-8193-434d-ba3c-eb711a1ace19}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Light">
+      <UniqueIdentifier>{ba55c02d-044c-4e66-824d-d6fc2855e6c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp">
@@ -72,6 +75,12 @@
     <ClCompile Include="src\Renderer\GBuffer.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Light\DirectionalLight.cpp">
+      <Filter>Source\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Light\LightManager.cpp">
+      <Filter>Source\Light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.hpp">
@@ -125,11 +134,14 @@
     <ClInclude Include="src\Renderer\GBuffer.hpp">
       <Filter>Source\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Light\DirectionalLight.hpp">
+      <Filter>Source\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Light\LightManager.hpp">
+      <Filter>Source\Light</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\Shaders\Lighting.fs.glsl">
-      <Filter>Shader Files</Filter>
-    </None>
     <None Include="bin\Shaders\Geometry.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
@@ -140,6 +152,9 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="bin\Shaders\Geometry.fs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\DirectionalLight.fs.glsl">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

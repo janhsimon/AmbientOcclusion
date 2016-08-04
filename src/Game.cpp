@@ -35,6 +35,7 @@ Game::Game()
 Game::~Game()
 {
 	if (sceneRenderer) delete sceneRenderer;
+	if (lightManager) delete lightManager;
 	if (modelManager) delete modelManager;
 	if (camera) delete camera;
 	if (input) delete input;
@@ -54,10 +55,17 @@ bool Game::load()
 	if (!Error::checkMemory(modelManager = new ModelManager())) return false;
 	if (!modelManager->load()) return false;
 	if (!modelManager->loadModel("Models\\Sponza.obj")) return false;
-	
+	if (!modelManager->loadModel("Models\\ArmyPilot.x", glm::vec3(-200.0f - 80.0f, 0.0f, 525.0f))) return false;
+	if (!modelManager->loadModel("Models\\ArmyPilot.x", glm::vec3(200.0f - 80.0f, 0.0f, 525.0f))) return false;
+
+	if (!Error::checkMemory(lightManager = new LightManager())) return false;
+	if (!lightManager->addDirectionalLight(glm::vec3(0.2f, 1.0f, 0.2f), glm::vec3(1.0f, 0.5f, 0.0f))) return false;
+	if (!lightManager->addDirectionalLight(glm::vec3(-0.9f, 1.0f, -0.8f), glm::vec3(0.0f, 0.5f, 1.0f))) return false;
+
 	assert(modelManager);
+	assert(lightManager);
 	if (!Error::checkMemory(sceneRenderer = new SceneRenderer())) return false;
-	if (!sceneRenderer->load(modelManager)) return false;
+	if (!sceneRenderer->load(modelManager, lightManager)) return false;
 
 	//weaponModel = new AnimatedModel();
 	//if (!weaponModel->load("Models\\aktest.3ds"))

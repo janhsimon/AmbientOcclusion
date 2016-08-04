@@ -25,8 +25,8 @@ bool SceneRenderer::loadShaders()
 	// load fragment shaders
 	if (!Error::checkMemory(geometryFragmentShader = new Shader())) return false;
 	if (!geometryFragmentShader->load("Shaders\\Geometry.fs.glsl", GL_FRAGMENT_SHADER)) return false;
-	if (!Error::checkMemory(lightingFragmentShader = new Shader())) return false;
-	if (!lightingFragmentShader->load("Shaders\\Lighting.fs.glsl", GL_FRAGMENT_SHADER)) return false;
+	if (!Error::checkMemory(directionalLightFragmentShader = new Shader())) return false;
+	if (!directionalLightFragmentShader->load("Shaders\\DirectionalLight.fs.glsl", GL_FRAGMENT_SHADER)) return false;
 
 	return true;
 }
@@ -37,7 +37,7 @@ bool SceneRenderer::loadShaderPrograms()
 	assert(skinnedGeometryVertexShader);
 	assert(lightingVertexShader);
 	assert(geometryFragmentShader);
-	assert(lightingFragmentShader);
+	assert(directionalLightFragmentShader);
 
 	if (!Error::checkMemory(geometryShaderProgram = new ShaderProgram())) return false;
 	if (!geometryShaderProgram->load(geometryVertexShader, geometryFragmentShader)) return false;
@@ -49,15 +49,17 @@ bool SceneRenderer::loadShaderPrograms()
 	if (!skinnedGeometryShaderProgram->registerUniform("worldMatrix")) return false;
 	if (!skinnedGeometryShaderProgram->registerUniform("viewProjectionMatrix")) return false;
 
-	if (!Error::checkMemory(lightingShaderProgram = new ShaderProgram())) return false;
-	if (!lightingShaderProgram->load(lightingVertexShader, lightingFragmentShader)) return false;
-	if (!lightingShaderProgram->registerUniform("inGBufferMRT0")) return false;
-	if (!lightingShaderProgram->registerUniform("inGBufferMRT1")) return false;
-	if (!lightingShaderProgram->registerUniform("screenSize")) return false;
-	glUseProgram(lightingShaderProgram->getHandle());
-	glUniform1i(lightingShaderProgram->getUniform("inGBufferMRT0"), 0);
-	glUniform1i(lightingShaderProgram->getUniform("inGBufferMRT1"), 1);
-	glUniform2f(lightingShaderProgram->getUniform("screenSize"), 1280.0f, 720.0f);
+	if (!Error::checkMemory(directionalLightShaderProgram = new ShaderProgram())) return false;
+	if (!directionalLightShaderProgram->load(lightingVertexShader, directionalLightFragmentShader)) return false;
+	if (!directionalLightShaderProgram->registerUniform("inGBufferMRT0")) return false;
+	if (!directionalLightShaderProgram->registerUniform("inGBufferMRT1")) return false;
+	if (!directionalLightShaderProgram->registerUniform("screenSize")) return false;
+	if (!directionalLightShaderProgram->registerUniform("lightDirection")) return false;
+	if (!directionalLightShaderProgram->registerUniform("lightColor")) return false;
+	glUseProgram(directionalLightShaderProgram->getHandle());
+	glUniform1i(directionalLightShaderProgram->getUniform("inGBufferMRT0"), 0);
+	glUniform1i(directionalLightShaderProgram->getUniform("inGBufferMRT1"), 1);
+	glUniform2f(directionalLightShaderProgram->getUniform("screenSize"), 1280.0f, 720.0f);
 
 	return true;
 }
@@ -71,20 +73,23 @@ void SceneRenderer::deleteShaders()
 
 	// delete fragment shaders
 	if (geometryFragmentShader) delete geometryFragmentShader;
-	if (lightingFragmentShader) delete lightingFragmentShader;
+	if (directionalLightFragmentShader) delete directionalLightFragmentShader;
 }
 
 void SceneRenderer::deleteShaderPrograms()
 {
 	if (geometryShaderProgram) delete geometryShaderProgram;
 	if (skinnedGeometryShaderProgram) delete skinnedGeometryShaderProgram;
-	if (lightingShaderProgram) delete lightingShaderProgram;
+	if (directionalLightShaderProgram) delete directionalLightShaderProgram;
 }
 
-bool SceneRenderer::load(const ModelManager *modelManager)
+bool SceneRenderer::load(const ModelManager *modelManager, const LightManager *lightManager)
 {
 	assert(modelManager);
 	this->modelManager = modelManager;
+
+	assert(lightManager);
+	this->lightManager = lightManager;
 
 	// load shaders and shader programs
 	if (!loadShaders()) return false;
@@ -115,11 +120,11 @@ void SceneRenderer::renderGeometryPass(const Camera *camera)
 	glUniformMatrix4fv(geometryShaderProgram->getUniform("viewProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(camera->getProjectionMatrix() * camera->getViewMatrix()));
 
 	assert(modelManager);
-	for (unsigned int i = 0; i < modelManager->getNumModels(); ++i)
+	for (unsigned int modelIndex = 0; modelIndex < modelManager->getNumModels(); ++modelIndex)
 	// loop through each model
 	{
 		// set the world matrix and render the model
-		Model *model = modelManager->getModelAt(i);
+		Model *model = modelManager->getModelAt(modelIndex);
 		assert(model);
 		glUniformMatrix4fv(geometryShaderProgram->getUniform("worldMatrix"), 1, GL_FALSE, glm::value_ptr(model->getWorldMatrix()));
 		model->render();
@@ -134,6 +139,8 @@ void SceneRenderer::renderLightingPass(const Camera *camera)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	glEnable(GL_BLEND);
+
 	// bind the geometry buffer textures
 	for (unsigned int i = 0; i < 2; ++i)
 	{
@@ -142,12 +149,26 @@ void SceneRenderer::renderLightingPass(const Camera *camera)
 	}
 
 	// use the lighting shader program
-	assert(lightingShaderProgram);
-	glUseProgram(lightingShaderProgram->getHandle());
+	assert(directionalLightShaderProgram);
+	glUseProgram(directionalLightShaderProgram->getHandle());
 
-	Model *unitQuad = modelManager->getUnitQuad();
-	assert(unitQuad);
-	unitQuad->render();
+	// get the directional light geometry
+	assert(modelManager);
+	Model *directionalLightGeometry = modelManager->getDirectionalLightGeometry();
+	assert(directionalLightGeometry);
+
+	assert(lightManager);
+	for (unsigned int directionalLightIndex = 0; directionalLightIndex < lightManager->getNumDirectionalLights(); ++directionalLightIndex)
+	// loop through each directional light
+	{
+		DirectionalLight *directionalLight = lightManager->getDirectionalLightAt(directionalLightIndex);
+		assert(directionalLight);
+		glUniform3f(directionalLightShaderProgram->getUniform("lightDirection"), directionalLight->getForward().x, directionalLight->getForward().y, directionalLight->getForward().z);
+		glUniform3f(directionalLightShaderProgram->getUniform("lightColor"), directionalLight->getColor().r, directionalLight->getColor().g, directionalLight->getColor().b);
+		directionalLightGeometry->render();
+	}
+
+	glDisable(GL_BLEND);
 
 	/*
 	glFrontFace(GL_CCW);

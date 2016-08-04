@@ -58,6 +58,8 @@ bool Window::initGL()
 
 	glClearColor(0.3f, 0.3f, 0.6f, 1.0f);
 	glFrontFace(GL_CW);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_ONE, GL_ONE);
 
 	if (!Error::checkGL())
 		return false;

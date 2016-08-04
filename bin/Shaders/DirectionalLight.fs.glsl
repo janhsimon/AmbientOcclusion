@@ -4,6 +4,9 @@ layout(location = 0) out vec3 outColor;
 
 uniform vec2 screenSize;
 
+uniform vec3 lightDirection;
+uniform vec3 lightColor;
+
 uniform sampler2D inGBufferMRT0;
 uniform sampler2D inGBufferMRT1;
 
@@ -16,6 +19,6 @@ void main()
 	vec3 normal = texture(inGBufferMRT1, uv).rgb;
 	normal = normalize(normal * 2.0 - 1.0);
 	
-	float diffuseTerm = dot(normal, vec3(0.2, 1.0, 0.2));
-	outColor = color * diffuseTerm;
+	vec3 diffuseLight = dot(normal, lightDirection) * lightColor;
+	outColor = color * 2.4 * diffuseLight;
 }
