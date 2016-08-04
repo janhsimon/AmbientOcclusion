@@ -1,6 +1,6 @@
 #include "Vertex.hpp"
 
-Vertex::Vertex(const aiVector3D &position, const aiVector3D &normal, const aiColor4D &color)
+Vertex::Vertex(const aiVector3D &position, const aiVector3D &normal, const aiColor3D &color)
 {
 	for (int i = 0; i < 4; ++i)
 	{
@@ -8,9 +8,9 @@ Vertex::Vertex(const aiVector3D &position, const aiVector3D &normal, const aiCol
 		{
 			this->position[i] = position[i];
 			this->normal[i] = normal[i];
+			this->color[i] = color[i];
 		}
-
-		this->color[i] = color[i];
+		
 		this->boneWeight[i] = 0.0f;
 		this->boneID[i] = 0;
 	}

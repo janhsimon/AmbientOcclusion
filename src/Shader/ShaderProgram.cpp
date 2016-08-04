@@ -31,7 +31,8 @@ bool ShaderProgram::load(Shader *vertexShader, Shader *fragmentShader)
 		GLsizei len;
 		glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &len);
 
-		GLchar *log = new GLchar[len + 1];
+		GLchar *log;
+		if (!Error::checkMemory(log = new GLchar[len + 1])) return false;
 		glGetProgramInfoLog(handle, len, &len, log);
 
 		std::stringstream s;
@@ -42,13 +43,8 @@ bool ShaderProgram::load(Shader *vertexShader, Shader *fragmentShader)
 		return false;
 	}
 
-	if (glGetError() != GL_NO_ERROR)
-	{
-		std::stringstream s;
-		s << "Failed to link shaders \"" << vertexShader->getFilename() << "\" and \"" << fragmentShader->getFilename() << "\".";
-		Error::report(s.str());
+	if (!Error::checkGL())
 		return false;
-	}
 
 	return true;
 }
@@ -56,16 +52,19 @@ bool ShaderProgram::load(Shader *vertexShader, Shader *fragmentShader)
 bool ShaderProgram::registerUniform(const std::string &name)
 {
 	GLint location = glGetUniformLocation(handle, name.c_str());
-	
-	if (location < 0 || glGetError() != GL_NO_ERROR)
+
+	if (location < 0)
 	{
 		assert(vertexShader);
 		assert(fragmentShader);
 		std::stringstream s;
-		s << "Failed to register uniform \"" << name << "\" for shaders \"" << vertexShader->getFilename() << "\" and \"" << fragmentShader->getFilename() << "\".";
+		s << "Failed to register uniform \"" << name << "\" for vertex shader \"" << vertexShader->getFilename() << "\" and fragment shader \"" << fragmentShader->getFilename() << "\".";
 		Error::report(s.str());
 		return false;
 	}
+
+	if (!Error::checkGL())
+		return false;
 
 	uniforms[name] = location;
 

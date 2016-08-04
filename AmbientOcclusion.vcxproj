@@ -151,6 +151,7 @@
     <ClCompile Include="src\Model\Model.cpp" />
     <ClCompile Include="src\Model\ModelManager.cpp" />
     <ClCompile Include="src\Model\Vertex.cpp" />
+    <ClCompile Include="src\Renderer\GBuffer.cpp" />
     <ClCompile Include="src\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="src\Shader\Shader.cpp" />
     <ClCompile Include="src\Shader\ShaderProgram.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="src\Model\Model.hpp" />
     <ClInclude Include="src\Model\ModelManager.hpp" />
     <ClInclude Include="src\Model\Vertex.hpp" />
+    <ClInclude Include="src\Renderer\GBuffer.hpp" />
     <ClInclude Include="src\Renderer\SceneRenderer.hpp" />
     <ClInclude Include="src\Shader\Shader.hpp" />
     <ClInclude Include="src\Shader\ShaderProgram.hpp" />
@@ -176,11 +178,11 @@
     <ClInclude Include="src\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\Shaders\Lit.fs.glsl" />
-    <None Include="bin\Shaders\NoTransform.vs.glsl" />
-    <None Include="bin\Shaders\StandardTransform.vs.glsl" />
-    <None Include="bin\Shaders\SkinnedTransform.vs.glsl" />
-    <None Include="bin\Shaders\Unlit.fs.glsl" />
+    <None Include="bin\Shaders\Geometry.fs.glsl" />
+    <None Include="bin\Shaders\Lighting.fs.glsl" />
+    <None Include="bin\Shaders\Lighting.vs.glsl" />
+    <None Include="bin\Shaders\Geometry.vs.glsl" />
+    <None Include="bin\Shaders\SkinnedGeometry.vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -4,6 +4,13 @@
 #include "Shader.hpp"
 #include "..\Error.hpp"
 
+Shader::~Shader()
+{
+	glDeleteShader(handle);
+
+	Error::checkGL();
+}
+
 bool Shader::load(const std::string &filename, GLenum type)
 {
 	std::ifstream file(filename);
@@ -32,7 +39,8 @@ bool Shader::load(const std::string &filename, GLenum type)
 		GLsizei len;
 		glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &len);
 
-		GLchar *log = new GLchar[len + 1];
+		GLchar *log;
+		if (!Error::checkMemory(log = new GLchar[len + 1])) return false;
 		glGetShaderInfoLog(handle, len, &len, log);
 
 		std::stringstream s;
@@ -43,18 +51,10 @@ bool Shader::load(const std::string &filename, GLenum type)
 		return false;
 	}
 
-	if (glGetError() != GL_NO_ERROR)
-	{
-		Error::report("Failed to compile shader file \"" + filename + "\".");
+	if (!Error::checkGL())
 		return false;
-	}
 	
 	this->filename = filename;
 
 	return true;
-}
-
-void Shader::unload()
-{
-	glDeleteShader(handle);
 }

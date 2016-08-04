@@ -10,7 +10,8 @@ class ModelManager
 private:
 	std::vector<Model*> models;
 	std::vector<AnimatedModel*> animatedModels;
-	Model *unitQuadModel;
+	Model *unitQuad;
+	Model *pointLightVolumeModel;
 	Model *testSphereModel;
 
 public:
@@ -27,6 +28,7 @@ public:
 	inline Model* getModelAt(unsigned int index) const { assert(index < models.size()); return models[index]; }
 	inline Model* getAnimatedModelAt(unsigned int index) const { assert(index < animatedModels.size()); return animatedModels[index]; }
 
-	inline Model* getUnitQuadModel() const { assert(unitQuadModel); return unitQuadModel; }
+	inline Model* getUnitQuad() const { assert(unitQuad); return unitQuad; }
+	inline Model* getPointLightVolumeModel() const { assert(pointLightVolumeModel); return pointLightVolumeModel; }
 	inline Model* getTestSphereModel() const { assert(testSphereModel); return testSphereModel; }
 };

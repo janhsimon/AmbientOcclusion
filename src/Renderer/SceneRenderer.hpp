@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GBuffer.hpp"
 #include "..\Camera.hpp"
 #include "..\Model\ModelManager.hpp"
 #include "..\Shader\Shader.hpp"
@@ -9,13 +10,15 @@ class SceneRenderer
 {
 private:
 	const ModelManager *modelManager;
-	Shader *standardTransformVertexShader, *skinnedTransformVertexShader, *noTransformVertexShader;
-	Shader *forwardLitFragmentShader, *forwardUnlitFragmentShader, *gBufferFillFragmentShader, *lightingFragmentShader;
-	ShaderProgram *forwardStandardShaderProgram, *forwardSkinnedShaderProgram, *geometryPassStandardShaderProgram, *geometryPassSkinnedShaderProgram, *lightingPassShaderProgram;
+	Shader *geometryVertexShader, *skinnedGeometryVertexShader, *lightingVertexShader;
+	Shader *geometryFragmentShader, *lightingFragmentShader;
+	ShaderProgram *geometryShaderProgram, *skinnedGeometryShaderProgram, *lightingShaderProgram;
+	GBuffer *gBuffer;
 
 	bool loadShaders();
 	bool loadShaderPrograms();
-	void renderForwardPass(const Camera *camera);
+	void deleteShaders();
+	void deleteShaderPrograms();
 	void renderGeometryPass(const Camera *camera);
 	void renderLightingPass(const Camera *camera);
 

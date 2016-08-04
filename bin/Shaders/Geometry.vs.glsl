@@ -2,9 +2,9 @@
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec4 inColor;
+layout(location = 2) in vec3 inColor;
 
-out vec4 vs_fs_color;
+out vec3 vs_fs_color;
 out vec3 vs_fs_normal;
 
 uniform mat4 worldMatrix;

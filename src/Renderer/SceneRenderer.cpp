@@ -2,46 +2,30 @@
 #include <gtx\transform.hpp>
 
 #include "SceneRenderer.hpp"
+#include "..\Error.hpp"
 
 SceneRenderer::~SceneRenderer()
 {
-	// delete shader programs
-	if (forwardStandardShaderProgram) delete forwardStandardShaderProgram;
-	if (forwardSkinnedShaderProgram) delete forwardSkinnedShaderProgram;
-	//if (geometryPassStandardShaderProgram) delete geometryPassStandardShaderProgram;
-	//if (geometryPassSkinnedShaderProgram) delete geometryPassSkinnedShaderProgram;
-	if (lightingPassShaderProgram) delete lightingPassShaderProgram;
+	deleteShaderPrograms();
+	deleteShaders();
 
-	// delete vertex shaders
-	if (standardTransformVertexShader) delete standardTransformVertexShader;
-	if (skinnedTransformVertexShader) delete skinnedTransformVertexShader;
-	if (noTransformVertexShader) delete noTransformVertexShader;
-	
-	// delete fragment shaders
-	if (forwardLitFragmentShader) delete forwardLitFragmentShader;
-	if (forwardUnlitFragmentShader) delete forwardUnlitFragmentShader;
-	if (gBufferFillFragmentShader) delete gBufferFillFragmentShader;
-	if (lightingFragmentShader) delete lightingFragmentShader;
+	if (gBuffer) delete gBuffer;
 }
 
 bool SceneRenderer::loadShaders()
 {
 	// load vertex shaders
-	standardTransformVertexShader = new Shader();
-	if (!standardTransformVertexShader->load("Shaders\\StandardTransform.vs.glsl", GL_VERTEX_SHADER)) return false;
-	skinnedTransformVertexShader = new Shader();
-	if (!skinnedTransformVertexShader->load("Shaders\\SkinnedTransform.vs.glsl", GL_VERTEX_SHADER)) return false;
-	noTransformVertexShader = new Shader();
-	if (!noTransformVertexShader->load("Shaders\\NoTransform.vs.glsl", GL_VERTEX_SHADER)) return false;
+	if (!Error::checkMemory(geometryVertexShader = new Shader())) return false;
+	if (!geometryVertexShader->load("Shaders\\Geometry.vs.glsl", GL_VERTEX_SHADER)) return false;
+	if (!Error::checkMemory(skinnedGeometryVertexShader = new Shader())) return false;
+	if (!skinnedGeometryVertexShader->load("Shaders\\SkinnedGeometry.vs.glsl", GL_VERTEX_SHADER)) return false;
+	if (!Error::checkMemory(lightingVertexShader = new Shader())) return false;
+	if (!lightingVertexShader->load("Shaders\\Lighting.vs.glsl", GL_VERTEX_SHADER)) return false;
 
 	// load fragment shaders
-	forwardLitFragmentShader = new Shader();
-	if (!forwardLitFragmentShader->load("Shaders\\Lit.fs.glsl", GL_FRAGMENT_SHADER)) return false;
-	forwardUnlitFragmentShader = new Shader();
-	if (!forwardUnlitFragmentShader->load("Shaders\\Unlit.fs.glsl", GL_FRAGMENT_SHADER)) return false;
-	gBufferFillFragmentShader = new Shader();
-	if (!gBufferFillFragmentShader->load("Shaders\\GBufferFill.fs.glsl", GL_FRAGMENT_SHADER)) return false;
-	lightingFragmentShader = new Shader();
+	if (!Error::checkMemory(geometryFragmentShader = new Shader())) return false;
+	if (!geometryFragmentShader->load("Shaders\\Geometry.fs.glsl", GL_FRAGMENT_SHADER)) return false;
+	if (!Error::checkMemory(lightingFragmentShader = new Shader())) return false;
 	if (!lightingFragmentShader->load("Shaders\\Lighting.fs.glsl", GL_FRAGMENT_SHADER)) return false;
 
 	return true;
@@ -49,30 +33,52 @@ bool SceneRenderer::loadShaders()
 
 bool SceneRenderer::loadShaderPrograms()
 {
-	assert(standardTransformVertexShader);
-	assert(skinnedTransformVertexShader);
-	assert(noTransformVertexShader);
-	assert(forwardLitFragmentShader);
-	assert(forwardUnlitFragmentShader);
-	assert(gBufferFillFragmentShader);
+	assert(geometryVertexShader);
+	assert(skinnedGeometryVertexShader);
+	assert(lightingVertexShader);
+	assert(geometryFragmentShader);
 	assert(lightingFragmentShader);
 
-	forwardStandardShaderProgram = new ShaderProgram();
-	if (!forwardStandardShaderProgram->load(standardTransformVertexShader, forwardLitFragmentShader)) return false;
-	if (!forwardStandardShaderProgram->registerUniform("worldMatrix")) return false;
-	if (!forwardStandardShaderProgram->registerUniform("viewProjectionMatrix")) return false;
+	if (!Error::checkMemory(geometryShaderProgram = new ShaderProgram())) return false;
+	if (!geometryShaderProgram->load(geometryVertexShader, geometryFragmentShader)) return false;
+	if (!geometryShaderProgram->registerUniform("worldMatrix")) return false;
+	if (!geometryShaderProgram->registerUniform("viewProjectionMatrix")) return false;
 
-	forwardSkinnedShaderProgram = new ShaderProgram();
-	if (!forwardSkinnedShaderProgram->load(skinnedTransformVertexShader, forwardLitFragmentShader)) return false;
-	if (!forwardSkinnedShaderProgram->registerUniform("worldMatrix")) return false;
-	if (!forwardSkinnedShaderProgram->registerUniform("viewProjectionMatrix")) return false;
+	if (!Error::checkMemory(skinnedGeometryShaderProgram = new ShaderProgram())) return false;
+	if (!skinnedGeometryShaderProgram->load(skinnedGeometryVertexShader, geometryFragmentShader)) return false;
+	if (!skinnedGeometryShaderProgram->registerUniform("worldMatrix")) return false;
+	if (!skinnedGeometryShaderProgram->registerUniform("viewProjectionMatrix")) return false;
 
-	lightingPassShaderProgram = new ShaderProgram();
-	if (!lightingPassShaderProgram->load(noTransformVertexShader, forwardUnlitFragmentShader)) return false;
-	if (!lightingPassShaderProgram->registerUniform("center")) return false;
-	if (!lightingPassShaderProgram->registerUniform("scale")) return false;
+	if (!Error::checkMemory(lightingShaderProgram = new ShaderProgram())) return false;
+	if (!lightingShaderProgram->load(lightingVertexShader, lightingFragmentShader)) return false;
+	if (!lightingShaderProgram->registerUniform("inGBufferMRT0")) return false;
+	if (!lightingShaderProgram->registerUniform("inGBufferMRT1")) return false;
+	if (!lightingShaderProgram->registerUniform("screenSize")) return false;
+	glUseProgram(lightingShaderProgram->getHandle());
+	glUniform1i(lightingShaderProgram->getUniform("inGBufferMRT0"), 0);
+	glUniform1i(lightingShaderProgram->getUniform("inGBufferMRT1"), 1);
+	glUniform2f(lightingShaderProgram->getUniform("screenSize"), 1280.0f, 720.0f);
 
 	return true;
+}
+
+void SceneRenderer::deleteShaders()
+{
+	// delete vertex shaders
+	if (geometryVertexShader) delete geometryVertexShader;
+	if (skinnedGeometryVertexShader) delete skinnedGeometryVertexShader;
+	if (lightingVertexShader) delete lightingVertexShader;
+
+	// delete fragment shaders
+	if (geometryFragmentShader) delete geometryFragmentShader;
+	if (lightingFragmentShader) delete lightingFragmentShader;
+}
+
+void SceneRenderer::deleteShaderPrograms()
+{
+	if (geometryShaderProgram) delete geometryShaderProgram;
+	if (skinnedGeometryShaderProgram) delete skinnedGeometryShaderProgram;
+	if (lightingShaderProgram) delete lightingShaderProgram;
 }
 
 bool SceneRenderer::load(const ModelManager *modelManager)
@@ -80,27 +86,33 @@ bool SceneRenderer::load(const ModelManager *modelManager)
 	assert(modelManager);
 	this->modelManager = modelManager;
 
-	if (!loadShaders())
-		return false;
+	// load shaders and shader programs
+	if (!loadShaders()) return false;
+	if (!loadShaderPrograms()) return false;
 
-	if (!loadShaderPrograms())
-		return false;
+	// load geometry buffer
+	if (!Error::checkMemory(gBuffer = new GBuffer())) return false;
+	if (!gBuffer->load(1280, 720)) return false;
 
 	return true;
 }
 
-void SceneRenderer::renderForwardPass(const Camera *camera)
+void SceneRenderer::renderGeometryPass(const Camera *camera)
 {
-	// clear the fbo
+	assert(gBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->getFBO());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// use the standard forward shader program
-	assert(forwardStandardShaderProgram);
-	glUseProgram(forwardStandardShaderProgram->getHandle());
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+	// use the geometry shader program
+	assert(geometryShaderProgram);
+	glUseProgram(geometryShaderProgram->getHandle());
 
 	// set the camera projection matrix once for the shader program
 	assert(camera);
-	glUniformMatrix4fv(forwardStandardShaderProgram->getUniform("viewProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(camera->getProjectionMatrix() * camera->getViewMatrix()));
+	glUniformMatrix4fv(geometryShaderProgram->getUniform("viewProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(camera->getProjectionMatrix() * camera->getViewMatrix()));
 
 	assert(modelManager);
 	for (unsigned int i = 0; i < modelManager->getNumModels(); ++i)
@@ -109,90 +121,59 @@ void SceneRenderer::renderForwardPass(const Camera *camera)
 		// set the world matrix and render the model
 		Model *model = modelManager->getModelAt(i);
 		assert(model);
-		glUniformMatrix4fv(forwardStandardShaderProgram->getUniform("worldMatrix"), 1, GL_FALSE, glm::value_ptr(model->getWorldMatrix()));
+		glUniformMatrix4fv(geometryShaderProgram->getUniform("worldMatrix"), 1, GL_FALSE, glm::value_ptr(model->getWorldMatrix()));
 		model->render();
 	}
 
-	Model *testSphereModel = modelManager->getTestSphereModel();
-	assert(testSphereModel);
-	testSphereModel->setScale(glm::vec3(64.0f, 64.0f, 64.0f));
-	glUniformMatrix4fv(forwardStandardShaderProgram->getUniform("worldMatrix"), 1, GL_FALSE, glm::value_ptr(testSphereModel->getWorldMatrix()));
-	testSphereModel->render();
-}
-
-void SceneRenderer::renderGeometryPass(const Camera *camera)
-{
-	// TODO: implement deferred rendering
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
 }
 
 void SceneRenderer::renderLightingPass(const Camera *camera)
 {
-	// use the lighting pass shader program
-	assert(lightingPassShaderProgram);
-	glUseProgram(lightingPassShaderProgram->getHandle());
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	// set the world matrix and render the unit quad model
-	assert(modelManager);
-	Model *unitQuadModel = modelManager->getUnitQuadModel();
-	assert(unitQuadModel);
-	Model *testSphereModel = modelManager->getTestSphereModel();
-	assert(testSphereModel);
-	assert(camera);
-
-	glm::vec3 spos = testSphereModel->getPosition();
-
-	if (camera->projectPointToScreenSpace(spos).w <= 0.0f)
-	// if the light source is behind the camera
-		return;
-
-	glm::vec3 z = glm::normalize(spos - camera->getPosition());
-	glm::vec3 y = glm::normalize(glm::cross(z, camera->getRight()));
-	glm::vec3 x = glm::normalize(glm::cross(z, y));
-	y = glm::normalize(glm::cross(z, x));
-	
-	float r = 64.0f;
-	glm::vec3 aabbCorner[8];
-	
-	aabbCorner[0] = spos - x * r - y * r - z * r;
-	aabbCorner[1] = spos - x * r - y * r + z * r;
-	aabbCorner[2] = spos - x * r + y * r - z * r;
-	aabbCorner[3] = spos - x * r + y * r + z * r;
-	aabbCorner[4] = spos + x * r - y * r - z * r;
-	aabbCorner[5] = spos + x * r - y * r + z * r;
-	aabbCorner[6] = spos + x * r + y * r - z * r;
-	aabbCorner[7] = spos + x * r + y * r + z * r;
-
-	for (unsigned int i = 0; i < 8; ++i)
-		aabbCorner[i] = glm::vec3(camera->projectPointToScreenSpace(aabbCorner[i]));
-
-	float minX = aabbCorner[0].x;
-	float maxX = aabbCorner[0].x;
-	float minY = aabbCorner[0].y;
-	float maxY = aabbCorner[0].y;
-	for (unsigned int i = 1; i < 8; ++i)
+	// bind the geometry buffer textures
+	for (unsigned int i = 0; i < 2; ++i)
 	{
-		if (aabbCorner[i].x < minX)
-			minX = aabbCorner[i].x;
-
-		if (aabbCorner[i].x > maxX)
-			maxX = aabbCorner[i].x;
-
-		if (aabbCorner[i].y < minY)
-			minY = aabbCorner[i].y;
-
-		if (aabbCorner[i].y > maxY)
-			maxY = aabbCorner[i].y;
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, gBuffer->getTexture(i));
 	}
 
-	glUniform2f(lightingPassShaderProgram->getUniform("center"), minX + (maxX - minX) / 2.0f, minY + (maxY - minY) / 2.0f);
-	glUniform2f(lightingPassShaderProgram->getUniform("scale"), (maxX - minX) / 2.0f, (maxY - minY) / 2.0f);
-	unitQuadModel->render();
+	// use the lighting shader program
+	assert(lightingShaderProgram);
+	glUseProgram(lightingShaderProgram->getHandle());
+
+	Model *unitQuad = modelManager->getUnitQuad();
+	assert(unitQuad);
+	unitQuad->render();
+
+	/*
+	glFrontFace(GL_CCW);
+
+	Model *testSphereModel = modelManager->getTestSphereModel();
+	assert(testSphereModel);
+	glUniformMatrix4fv(forwardStandardUnlitShaderProgram->getUniform("worldMatrix"), 1, GL_FALSE, glm::value_ptr(testSphereModel->getWorldMatrix()));
+	testSphereModel->render();
+
+	assert(modelManager);
+	Model *pointLightVolumeModel = modelManager->getPointLightVolumeModel();
+	assert(pointLightVolumeModel);
+	pointLightVolumeModel->setPosition(testSphereModel->getPosition());
+	pointLightVolumeModel->setScale(testSphereModel->getScale());
+	pointLightVolumeModel->update(0.0f);
+
+	glUniformMatrix4fv(lightingPassShaderProgram->getUniform("worldMatrix"), 1, GL_FALSE, glm::value_ptr(pointLightVolumeModel->getWorldMatrix()));
+	pointLightVolumeModel->render();
+
+	glFrontFace(GL_CW);
+	*/
 }
 
 void SceneRenderer::render(const Camera *camera)
 {
 	assert(camera);
-	renderForwardPass(camera);
 	renderGeometryPass(camera);
 	renderLightingPass(camera);
 }

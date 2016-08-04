@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include "Error.hpp"
 #include "Game.hpp"
 
 Game::Game()
@@ -42,20 +43,20 @@ Game::~Game()
 
 bool Game::load()
 {
-	window = new Window();
+	if (!Error::checkMemory(window = new Window())) return false;
 	if (!window->load(1280, 720)) return false;
 
-	input = new Input();
+	if (!Error::checkMemory(input = new Input())) return false;
 
 	assert(window);
-	camera = new Camera(glm::vec3(0.0f, 100.0f, 0.0f), window);
+	if (!Error::checkMemory(camera = new Camera(glm::vec3(0.0f, 100.0f, 0.0f), window))) return false;
 
-	modelManager = new ModelManager();
+	if (!Error::checkMemory(modelManager = new ModelManager())) return false;
 	if (!modelManager->load()) return false;
 	if (!modelManager->loadModel("Models\\Sponza.obj")) return false;
 	
 	assert(modelManager);
-	sceneRenderer = new SceneRenderer();
+	if (!Error::checkMemory(sceneRenderer = new SceneRenderer())) return false;
 	if (!sceneRenderer->load(modelManager)) return false;
 
 	//weaponModel = new AnimatedModel();
@@ -104,10 +105,6 @@ void Game::update(float deltaTime)
 		assert(model);
 		model->update(deltaTime);
 	}
-
-	Model *testSphereModel = modelManager->getTestSphereModel();
-	assert(testSphereModel);
-	testSphereModel->update(deltaTime);
 
 	//assert(weaponModel);
 	//weaponModel->update(deltaTime);

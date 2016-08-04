@@ -1,12 +1,21 @@
 #version 330
 
-in vec4 vs_fs_color;
-in vec3 vs_fs_normal;
+layout(location = 0) out vec3 outColor;
 
-layout (location = 0) out vec4 outColor;
+uniform vec2 screenSize;
+
+uniform sampler2D inGBufferMRT0;
+uniform sampler2D inGBufferMRT1;
 
 void main()
 {
-	float diffuseTerm = clamp(dot(vec3(1.0, 1.0, -1.0), vs_fs_normal), 0.0, 1.0);
-	outColor = vec4(vs_fs_color.rgb * diffuseTerm, vs_fs_color.a);
+	vec2 uv = gl_FragCoord.xy / screenSize;
+	
+	vec3 color = texture(inGBufferMRT0, uv).rgb;
+
+	vec3 normal = texture(inGBufferMRT1, uv).rgb;
+	normal = normalize(normal * 2.0 - 1.0);
+	
+	float diffuseTerm = dot(normal, vec3(0.2, 1.0, 0.2));
+	outColor = color * diffuseTerm;
 }

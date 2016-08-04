@@ -13,7 +13,7 @@ const unsigned int AnimatedModel::MAX_BONES = 100;
 AnimatedModel::AnimatedModel(const glm::vec3 &position) : Model(position)
 {
 	currentAnimation = 0;
-	finalBoneMatrices = new glm::mat4[MAX_BONES];
+	if (!Error::checkMemory(finalBoneMatrices = new glm::mat4[MAX_BONES])) return;
 }
 
 AnimatedModel::~AnimatedModel()
@@ -47,7 +47,9 @@ void AnimatedModel::loadBones(const aiScene *model, const aiMesh *mesh, unsigned
 		aiNode *boneNode = model->mRootNode->FindNode(bone->mName);
 		assert(boneNode);
 		glm::mat4 inverseBindPoseMatrix = MathHelper::aiMatrix4x4ToGlm(bone->mOffsetMatrix);
-		bones.push_back(new Bone(bone->mName.C_Str(), inverseBindPoseMatrix));
+		Bone *newBone;
+		if (!Error::checkMemory(newBone = new Bone(bone->mName.C_Str(), inverseBindPoseMatrix))) return;
+		bones.push_back(newBone);
 
 		std::stringstream s;
 		s << "Bone \"" << bone->mName.C_Str() << "\" added.";
@@ -226,11 +228,11 @@ bool AnimatedModel::load(const std::string &filename)
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 0));  // position
-	glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 3));  // normal
-	glVertexAttribPointer (2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 6));  // color
-	glVertexAttribPointer (3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 10)); // bone weights
-	glVertexAttribIPointer(4, 4, GL_UNSIGNED_INT,    sizeof(Vertex), (void *)(sizeof(float) * 14)); // bone ids
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 0));	// position
+	glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 3));	// normal
+	glVertexAttribPointer (2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 6));	// color
+	glVertexAttribPointer (3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 9));	// bone weights
+	glVertexAttribIPointer(4, 4, GL_UNSIGNED_INT,    sizeof(Vertex), (void *)(sizeof(float) * 13));	// bone ids
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
@@ -240,12 +242,8 @@ bool AnimatedModel::load(const std::string &filename)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	if (glGetError() != GL_NO_ERROR)
-	// if there was an issue loading the model
-	{
-		Error::report("Failed to load model \"" + filename + "\".");
+	if (!Error::checkGL())
 		return false;
-	}
 
 	return true;
 }
@@ -276,7 +274,8 @@ void AnimatedModel::update(float deltaTime)
 
 void AnimatedModel::render(/*SkinnedForwardShader *skinnedForwardShader*/)
 {
-	float *data = new float[MAX_BONES * 16];
+	float *data;
+	if (!Error::checkMemory(data = new float[MAX_BONES * 16])) return;
 
 	for (int i = 0; i < MAX_BONES; ++i)
 	{

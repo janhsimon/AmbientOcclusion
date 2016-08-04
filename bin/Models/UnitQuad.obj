@@ -12,6 +12,6 @@ v  1 1 0
 # 4 vertices
 
 g Plane001
-f 1 2 4 3 
+f 3 4 2 1
 # 1 polygons
 

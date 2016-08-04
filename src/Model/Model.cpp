@@ -18,7 +18,7 @@ Model::~Model()
 	glDeleteVertexArrays(1, &VAO);
 }
 
-unsigned int Model::loadVertices(const aiMesh *mesh, const aiColor4D &fallbackColor)
+unsigned int Model::loadVertices(const aiMesh *mesh, const aiColor3D &fallbackColor)
 {
 	assert(mesh);
 
@@ -28,7 +28,7 @@ unsigned int Model::loadVertices(const aiMesh *mesh, const aiColor4D &fallbackCo
 	// loop through each vertex in the mesh
 	{
 		const aiVector3D position = mesh->HasPositions() ? mesh->mVertices[vertexIndex] : aiVector3D(0.0f, 0.0f, 0.0f);
-		const aiColor4D color = mesh->HasVertexColors(0) ? mesh->mColors[0][vertexIndex] : fallbackColor;
+		const aiColor3D color = mesh->HasVertexColors(0) ? aiColor3D(mesh->mColors[0][vertexIndex].r, mesh->mColors[0][vertexIndex].g, mesh->mColors[0][vertexIndex].b) : fallbackColor;
 		const aiVector3D normal = mesh->HasNormals() ? mesh->mNormals[vertexIndex] : aiVector3D(0.0f, 1.0f, 0.0f);
 
 		vertices.push_back(Vertex(position, normal, color));
@@ -57,10 +57,10 @@ void Model::loadIndices(const aiMesh *mesh, unsigned int startingVertex)
 	}
 }
 
-bool Model::load(const std::string &filename, const aiColor4D &fallbackColor)
+bool Model::load(const std::string &filename, const aiColor3D &fallbackColor)
 {
 	Assimp::Importer importer;
-	const aiScene *model = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+	const aiScene *model = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_ImproveCacheLocality | aiProcess_JoinIdenticalVertices);
 
 	if (!model)
 	// if there was an issue loading the model
@@ -105,7 +105,7 @@ bool Model::load(const std::string &filename, const aiColor4D &fallbackColor)
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 0));	// position
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 3));	// normal
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 6));	// color
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(sizeof(float) * 6));	// color
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
@@ -115,12 +115,8 @@ bool Model::load(const std::string &filename, const aiColor4D &fallbackColor)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	if (glGetError() != GL_NO_ERROR)
-	// if there was an issue loading the model
-	{
-		Error::report("Failed to load model \"" + filename + "\".");
+	if (!Error::checkGL())
 		return false;
-	}
 
 	return true;
 }
@@ -130,7 +126,7 @@ void Model::update(float deltaTime)
 	Transform::update(deltaTime);
 }
 
-void Model::render()
+void Model::render() const
 {
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, (unsigned int)indices.size(), GL_UNSIGNED_INT, 0);

@@ -69,6 +69,9 @@
     <ClCompile Include="src\Model\MathHelper.cpp">
       <Filter>Source\Model</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\GBuffer.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.hpp">
@@ -119,21 +122,24 @@
     <ClInclude Include="src\Model\ModelManager.hpp">
       <Filter>Source\Model</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\GBuffer.hpp">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\Shaders\StandardTransform.vs.glsl">
+    <None Include="bin\Shaders\Lighting.fs.glsl">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="bin\Shaders\SkinnedTransform.vs.glsl">
+    <None Include="bin\Shaders\Geometry.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="bin\Shaders\Lit.fs.glsl">
+    <None Include="bin\Shaders\SkinnedGeometry.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="bin\Shaders\NoTransform.vs.glsl">
+    <None Include="bin\Shaders\Lighting.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="bin\Shaders\Unlit.fs.glsl">
+    <None Include="bin\Shaders\Geometry.fs.glsl">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
