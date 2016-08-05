@@ -18,7 +18,7 @@ public:
 
 	bool load();
 
-	bool loadModel(const std::string &filename, const glm::vec3 &position = glm::vec3(0.0f));
+	bool loadModel(const std::string &filename, const glm::vec3 &position, const glm::vec3 &color);
 	bool loadAnimatedModel(const std::string &filename, const glm::vec3 &position = glm::vec3(0.0f));
 	
 	inline size_t getNumModels() const { return models.size(); }

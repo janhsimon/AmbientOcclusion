@@ -12,9 +12,9 @@ class SceneRenderer
 private:
 	const ModelManager *modelManager;
 	const LightManager *lightManager;
-	Shader *geometryVertexShader, *skinnedGeometryVertexShader, *lightingVertexShader;
-	Shader *geometryFragmentShader, *directionalLightFragmentShader;
-	ShaderProgram *geometryShaderProgram, *skinnedGeometryShaderProgram, *directionalLightShaderProgram;
+	Shader *geometryVertexShader, *skinnedGeometryVertexShader, *directionalLightVertexShader, *ambientOcclusionVertexShader;
+	Shader *geometryFragmentShader, *directionalLightFragmentShader, *ambientOcclusionFragmentShader;
+	ShaderProgram *geometryShaderProgram, *skinnedGeometryShaderProgram, *directionalLightShaderProgram, *ambientOcclusionShaderProgram;
 	GBuffer *gBuffer;
 
 	bool loadShaders();
@@ -22,7 +22,8 @@ private:
 	void deleteShaders();
 	void deleteShaderPrograms();
 	void renderGeometryPass(const Camera *camera);
-	void renderLightingPass(const Camera *camera);
+	void renderLightingPass();
+	void renderAmbientOcclusionPass(const Camera *camera);
 
 public:
 	~SceneRenderer();

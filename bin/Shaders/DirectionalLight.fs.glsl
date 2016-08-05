@@ -19,6 +19,6 @@ void main()
 	vec3 normal = texture(inGBufferMRT1, uv).rgb;
 	normal = normalize(normal * 2.0 - 1.0);
 	
-	vec3 diffuseLight = dot(normal, lightDirection) * lightColor;
-	outColor = color * 2.4 * diffuseLight;
+	vec3 diffuseLight = dot(normal, -lightDirection) * lightColor;
+	outColor = clamp(color * 2.4 * diffuseLight, 0.0, 1.0);
 }

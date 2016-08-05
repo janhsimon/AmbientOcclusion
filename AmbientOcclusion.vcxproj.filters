@@ -148,13 +148,19 @@
     <None Include="bin\Shaders\SkinnedGeometry.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="bin\Shaders\Lighting.vs.glsl">
-      <Filter>Shader Files</Filter>
-    </None>
     <None Include="bin\Shaders\Geometry.fs.glsl">
       <Filter>Shader Files</Filter>
     </None>
     <None Include="bin\Shaders\DirectionalLight.fs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\DirectionalLight.vs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\AmbientOcclusion.fs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\AmbientOcclusion.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

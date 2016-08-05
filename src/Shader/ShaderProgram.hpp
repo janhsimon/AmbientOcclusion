@@ -11,11 +11,13 @@ private:
 	GLuint handle;
 	std::unordered_map<std::string, GLint> uniforms;
 
+	//bool registerUniform(const std::string &name);
+	//GLint getUniformLocation(const std::string &name);
+
 public:
 	~ShaderProgram();
 
 	bool load(Shader *vertexShader, Shader *fragmentShader);
-	bool registerUniform(const std::string &name);
 	GLint getUniform(const std::string &name);
 
 	inline GLuint getHandle() const { return handle; }

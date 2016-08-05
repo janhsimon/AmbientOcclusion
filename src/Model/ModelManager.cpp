@@ -23,12 +23,12 @@ bool ModelManager::load()
 	return true;
 }
 
-bool ModelManager::loadModel(const std::string &filename, const glm::vec3 &position)
+bool ModelManager::loadModel(const std::string &filename, const glm::vec3 &position, const glm::vec3 &color)
 {
 	Model *model;
 	if (!Error::checkMemory(model = new Model(position))) return false;
 
-	if (!model->load(filename))
+	if (!model->load(filename, aiColor3D(color.r, color.g, color.b)))
 		return false;
 
 	models.push_back(model);

@@ -6,7 +6,7 @@ class GBuffer
 {
 private:
 	GLuint FBO;
-	GLuint textures[2];
+	GLuint textures[3];
 	GLuint depthTexture;
 
 public:
@@ -16,5 +16,4 @@ public:
 
 	GLuint getFBO();
 	GLuint getTexture(unsigned int index);
-	GLuint getDepthTexture();
 };

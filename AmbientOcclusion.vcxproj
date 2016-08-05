@@ -182,9 +182,11 @@
     <ClInclude Include="src\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\Shaders\AmbientOcclusion.fs.glsl" />
+    <None Include="bin\Shaders\AmbientOcclusion.vs.glsl" />
     <None Include="bin\Shaders\Geometry.fs.glsl" />
     <None Include="bin\Shaders\DirectionalLight.fs.glsl" />
-    <None Include="bin\Shaders\Lighting.vs.glsl" />
+    <None Include="bin\Shaders\DirectionalLight.vs.glsl" />
     <None Include="bin\Shaders\Geometry.vs.glsl" />
     <None Include="bin\Shaders\SkinnedGeometry.vs.glsl" />
   </ItemGroup>
