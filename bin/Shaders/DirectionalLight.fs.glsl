@@ -1,24 +1,21 @@
-#version 330
+#version 330 core
 
 layout(location = 0) out vec3 outColor;
 
-uniform vec2 screenSize;
+in vec3 vs_fs_lightDirection; // view-space light direction
 
-uniform vec3 lightDirection;
+uniform vec2 screenSize;
 uniform vec3 lightColor;
 
-uniform sampler2D inGBufferMRT0;
-uniform sampler2D inGBufferMRT1;
+uniform sampler2D inNormal; // view-space normal
+uniform sampler2D inColor; // diffuse color
 
 void main()
 {
 	vec2 uv = gl_FragCoord.xy / screenSize;
+	vec3 normal = texture(inNormal, uv).rgb;
+	vec3 color = texture(inColor, uv).rgb;
 	
-	vec3 color = texture(inGBufferMRT0, uv).rgb;
-
-	vec3 normal = texture(inGBufferMRT1, uv).rgb;
-	normal = normalize(normal * 2.0 - 1.0);
-	
-	vec3 diffuseLight = dot(normal, -lightDirection) * lightColor;
+	vec3 diffuseLight = dot(normal, -vs_fs_lightDirection) * lightColor;
 	outColor = clamp(color * 2.4 * diffuseLight, 0.0, 1.0);
 }

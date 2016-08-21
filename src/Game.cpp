@@ -64,8 +64,9 @@ bool Game::load()
 
 	assert(modelManager);
 	assert(lightManager);
+	assert(camera);
 	if (!Error::checkMemory(sceneRenderer = new SceneRenderer())) return false;
-	if (!sceneRenderer->load(modelManager, lightManager)) return false;
+	if (!sceneRenderer->load(modelManager, lightManager, camera)) return false;
 
 	//weaponModel = new AnimatedModel();
 	//if (!weaponModel->load("Models\\aktest.3ds"))

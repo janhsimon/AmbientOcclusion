@@ -11,9 +11,6 @@ private:
 	GLuint handle;
 	std::unordered_map<std::string, GLint> uniforms;
 
-	//bool registerUniform(const std::string &name);
-	//GLint getUniformLocation(const std::string &name);
-
 public:
 	~ShaderProgram();
 

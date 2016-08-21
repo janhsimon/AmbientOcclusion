@@ -49,37 +49,6 @@ bool ShaderProgram::load(Shader *vertexShader, Shader *fragmentShader)
 	return true;
 }
 
-/*
-bool ShaderProgram::registerUniform(const std::string &name)
-{
-	GLint location = glGetUniformLocation(handle, name.c_str());
-
-	if (location < 0)
-	{
-		assert(vertexShader);
-		assert(fragmentShader);
-		std::stringstream s;
-		s << "Failed to register uniform \"" << name << "\" for vertex shader \"" << vertexShader->getFilename() << "\" and fragment shader \"" << fragmentShader->getFilename() << "\".";
-		Error::report(s.str());
-		return false;
-	}
-
-	if (!Error::checkGL())
-		return false;
-
-	uniforms[name] = location;
-
-	return true;
-}
-
-GLint ShaderProgram::getUniformLocation(const std::string &name)
-{
-	std::unordered_map<std::string, GLint>::const_iterator uniform = uniforms.find(name);
-	assert(uniform != uniforms.end());
-	
-}
-*/
-
 GLint ShaderProgram::getUniform(const std::string &name)
 {
 	// try to find the uniform in the map
@@ -104,7 +73,7 @@ GLint ShaderProgram::getUniform(const std::string &name)
 	}
 
 	if (!Error::checkGL())
-		return false;
+		return -1;
 
 	// enter the uniform into our map for future usage
 	uniforms[name] = location;

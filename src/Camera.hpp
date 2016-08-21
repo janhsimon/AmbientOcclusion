@@ -12,7 +12,7 @@ private:
 	static float mouseSensitivity;
 
 	glm::mat4 viewMatrix, projectionMatrix;
-	float nearClipPlane, farClipPlane;
+	float near, far;
 
 	Window *window;
 	float fov;
@@ -28,6 +28,8 @@ public:
 	glm::vec4 projectPointToScreenSpace(const glm::vec4 &point) const;
 	glm::vec4 projectPointToScreenSpace(const glm::vec3 &point) const;
 
+	inline float getNear() const { return near; }
+	inline float getFar() const { return far; }
 	inline glm::mat4 getViewMatrix() const { return viewMatrix; }
 	inline glm::mat4 getProjectionMatrix() const { return projectionMatrix; }
 	inline float getFOV() const { return fov; }

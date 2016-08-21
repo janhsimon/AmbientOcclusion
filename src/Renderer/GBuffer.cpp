@@ -1,4 +1,4 @@
-#include <assert.h>
+#include <cassert>
 
 #include "GBuffer.hpp"
 #include "..\Error.hpp"
@@ -28,8 +28,9 @@ bool GBuffer::load(unsigned int screenWidth, unsigned int screenHeight)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, screenWidth, screenHeight, 0, GL_RGB, GL_FLOAT, NULL);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i], 0);
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	// depth
@@ -42,23 +43,7 @@ bool GBuffer::load(unsigned int screenWidth, unsigned int screenHeight)
 	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, drawBuffers);
 
-	if (!Error::checkGLFramebuffer()) return false;
-
-	// restore default FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	if (!Error::checkGL()) return false;
-
 	return true;
-}
-
-GLuint GBuffer::getFBO()
-{
-	return FBO;
-}
-
-GLuint GBuffer::getTexture(unsigned int index)
-{
-	assert(index < 3);
-	return textures[index];
 }

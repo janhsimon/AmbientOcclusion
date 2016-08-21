@@ -14,6 +14,6 @@ public:
 
 	bool load(unsigned int screenWidth, unsigned int screenHeight);
 
-	GLuint getFBO();
-	GLuint getTexture(unsigned int index);
+	inline GLuint getFBO() const { return FBO; }
+	inline GLuint getTexture(unsigned int index) const { assert(index < 3); return textures[index]; }
 };

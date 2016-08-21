@@ -81,6 +81,9 @@
     <ClCompile Include="src\Light\LightManager.cpp">
       <Filter>Source\Light</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\SSAOBuffer.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.hpp">
@@ -140,6 +143,9 @@
     <ClInclude Include="src\Light\LightManager.hpp">
       <Filter>Source\Light</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\SSAOBuffer.hpp">
+      <Filter>Source\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\Shaders\Geometry.vs.glsl">
@@ -161,6 +167,18 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="bin\Shaders\AmbientOcclusion.vs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\Blur.fs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\Blur.vs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\Standard.fs.glsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="bin\Shaders\Standard.vs.glsl">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

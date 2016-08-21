@@ -10,8 +10,8 @@ Camera::Camera(const glm::vec3 &position, Window *window) : Transform(position)
 {
 	this->window = window;
 
-	nearClipPlane = 0.1f;
-	farClipPlane = 5000.0f;
+	near = 0.1f;
+	far = 5000.0f;
 
 	setFOV(90.f);
 
@@ -83,5 +83,5 @@ void Camera::setFOV(float fov)
 	this->fov = fov;
 
 	assert(window);
-	projectionMatrix = glm::perspectiveFov(glm::radians(fov), (float)window->getWidth(), (float)window->getHeight(), nearClipPlane, farClipPlane);
+	projectionMatrix = glm::perspectiveFov(glm::radians(fov), (float)window->getWidth(), (float)window->getHeight(), near, far);
 }
